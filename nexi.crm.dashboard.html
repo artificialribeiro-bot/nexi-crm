@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        sans: ["Poppins", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a2b45;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark">
+    <div id="loader-full-page" class="fixed inset-0 bg-white/80 dark:bg-black/80 flex justify-center items-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <div id="dashboard-content" class="flex h-screen hidden">
+        <aside class="w-64 bg-primary-blue text-white flex flex-col">
+            <div class="p-6 text-center">
+                <img alt="Logo Nexi CRM" class="w-32 mx-auto"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcZvezugXBlNrPDcJy9BIkqhomNN1jporPQHBAuVaGvwMxrapnSVrr2F1iDmio5gShLqepWaFhphp3qUvfhG25cHsqfHxKeFe0JOiIzGsHQJNApOjhklKlOrESpORzdmC9Mij5DqWyP5puflxDu3ju7da60ma2gL_43w3BeBU4LC7IS5wT6uWh3InE9dHdudmRF8txUbI5m9PMvVZeetZ4Ec3Rxr1d8AlK7FaSVyYDZ-ElOg9aZ9B20THvoarH4gpUD26NWK8cac" />
+            </div>
+            <div class="p-6 border-t border-b border-white/10">
+                <div class="flex items-center">
+                    <img id="user-photo" alt="User Photo" class="w-12 h-12 rounded-full object-cover" src="https://placehold.co/48x48/ffffff/1a2b45?text=U" />
+                    <div class="ml-4">
+                        <p id="user-name" class="font-semibold">Carregando...</p>
+                        <p id="company-name" class="text-sm text-gray-400">...</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg bg-primary-orange" href="chats.html">
+                    <span class="material-icons mr-3">chat_bubble_outline</span>
+                    Chats
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="contatos.html">
+                    <span class="material-icons mr-3">contacts</span>
+                    Contatos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="produtos.html">
+                    <span class="material-icons mr-3">inventory_2</span>
+                    Produtos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="relatorios.html">
+                    <span class="material-icons mr-3">bar_chart</span>
+                    Relatórios
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="meus-dados.html">
+                    <span class="material-icons mr-3">person_outline</span>
+                    Meus dados
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="empresa.html">
+                    <span class="material-icons mr-3">business</span>
+                    Empresa
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <a id="logout-button" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10 cursor-pointer">
+                    <span class="material-icons mr-3">logout</span>
+                    Logout
+                </a>
+            </div>
+        </aside>
+        <main class="flex-1 p-10 overflow-y-auto">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p id="welcome-message" class="mt-2 text-gray-600 dark:text-gray-400">Bem-vindo ao seu painel!</p>
+            <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-primary-orange/20 text-primary-orange">
+                            <span class="material-icons">chat</span>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Chats Ativos</p>
+                            <p id="chats-count" class="text-2xl font-bold text-gray-900 dark:text-white">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-500/20 text-green-500">
+                            <span class="material-icons">contacts</span>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total de Contatos</p>
+                            <p id="contacts-count" class="text-2xl font-bold text-gray-900 dark:text-white">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-500/20 text-blue-500">
+                            <span class="material-icons">inventory_2</span>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total de Produtos</p>
+                            <p id="products-count" class="text-2xl font-bold text-gray-900 dark:text-white">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-500/20 text-yellow-500">
+                            <span class="material-icons">pending_actions</span>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Tarefas Pendentes</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">8</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- Future content here -->
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const API_CLIENTS_URL = 'https://script.google.com/macros/s/AKfycbwe2m8h2OP0bFpkItF4x5OYRT77Bkhkdvg-EEBEzT_fq59Yz6J8ulcX3iPq9KOjpfcwVg/exec';
+            const API_PRODUCTS_URL = 'https://script.google.com/macros/s/AKfycbyEFH261J3qybQfBslMZiFQyJh1dJnFtsgswekugKYgkrsV6bxXcMvFu_YGw5K-fS4zLQ/exec';
+            const API_CHATS_URL = 'https://script.google.com/macros/s/AKfycbzVsiDhZf_xkljhNO1CajInTz-Ne5TP_hEdvNxBGaNYjWDzzLQJ7toFx1zz3FCoYKWtxA/exec';
+            const API_EMPRESAS_URL = 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec';
+            const API_KEY = '1526';
+
+            const loader = document.getElementById('loader-full-page');
+            const dashboardContent = document.getElementById('dashboard-content');
+            
+            // Check for user data
+            const userDataString = localStorage.getItem('nexiUser');
+            if (!userDataString) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const userData = JSON.parse(userDataString);
+
+            // Check if user has a company ID
+            if (!userData.empresa_id) {
+                 window.location.href = 'empresa.crm.nexi.html';
+                 return;
+            }
+
+            // --- Populate UI with User Data ---
+            document.getElementById('user-name').textContent = userData.nome;
+            document.getElementById('welcome-message').textContent = `Bem-vindo ao seu painel, ${userData.nome.split(' ')[0]}!`;
+            if(userData.foto) {
+                 document.getElementById('user-photo').src = userData.foto;
+            }
+
+            // Fetch company name
+             try {
+                const response = await fetch(`${API_EMPRESAS_URL}?key=${API_KEY}&action=list_empresas&empresa_id=${userData.empresa_id}`);
+                const result = await response.json();
+                if (result.success && result.data.length > 0) {
+                    document.getElementById('company-name').textContent = result.data[0].nome;
+                }
+            } catch (error) {
+                 document.getElementById('company-name').textContent = "Empresa";
+            }
+            
+            // --- Fetch Dashboard Stats ---
+            const fetchChats = async () => {
+                try {
+                    const response = await fetch(`${API_CHATS_URL}?key=${API_KEY}&action=list_chats&status=aberto`);
+                    const result = await response.json();
+                    document.getElementById('chats-count').textContent = result.success ? result.data.length : 0;
+                } catch (e) { document.getElementById('chats-count').textContent = 0; }
+            };
+
+            const fetchContacts = async () => {
+                try {
+                    const response = await fetch(`${API_CLIENTS_URL}?action=getAllByCompany&id_empresa=${userData.empresa_id}`);
+                    const result = await response.json();
+                    document.getElementById('contacts-count').textContent = result.success ? result.data.length : 0;
+                } catch (e) { document.getElementById('contacts-count').textContent = 0; }
+            };
+
+            const fetchProducts = async () => {
+                try {
+                    const response = await fetch(`${API_PRODUCTS_URL}?action=getByCompany&id_empresa=${userData.empresa_id}`);
+                    const result = await response.json();
+                    document.getElementById('products-count').textContent = result.success ? result.data.length : 0;
+                } catch (e) { document.getElementById('products-count').textContent = 0; }
+            };
+
+            // Run all fetches and then show content
+            await Promise.all([fetchChats(), fetchContacts(), fetchProducts()]);
+            
+            loader.classList.add('hidden');
+            dashboardContent.classList.remove('hidden');
+
+            // --- Logout ---
+            document.getElementById('logout-button').addEventListener('click', () => {
+                localStorage.removeItem('nexiUser');
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+
+</body>
+</html>

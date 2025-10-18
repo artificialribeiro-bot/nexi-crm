@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Contatos</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        sans: ["Poppins", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a2b45;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark">
+    <div id="loader-full-page" class="fixed inset-0 bg-white/80 dark:bg-black/80 flex justify-center items-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <div id="main-content" class="flex h-screen hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-primary-blue text-white flex flex-col flex-shrink-0">
+             <div class="p-6 text-center">
+                <img alt="Logo Nexi CRM" class="w-32 mx-auto"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcZvezugXBlNrPDcJy9BIkqhomNN1jporPQHBAuVaGvwMxrapnSVrr2F1iDmio5gShLqepWaFhphp3qUvfhG25cHsqfHxKeFe0JOiIzGsHQJNApOjhklKlOrESpORzdmC9Mij5DqWyP5puflxDu3ju7da60ma2gL_43w3BeBU4LC7IS5wT6uWh3InE9dHdudmRF8txUbI5m9PMvVZeetZ4Ec3Rxr1d8AlK7FaSVyYDZ-ElOg9aZ9B20THvoarH4gpUD26NWK8cac" />
+            </div>
+            <div class="p-6 border-t border-b border-white/10">
+                <div class="flex items-center">
+                    <img id="user-photo" alt="User Photo" class="w-12 h-12 rounded-full object-cover" src="https://placehold.co/48x48/ffffff/1a2b45?text=U" />
+                    <div class="ml-4">
+                        <p id="user-name" class="font-semibold">Carregando...</p>
+                        <p id="company-name" class="text-sm text-gray-400">...</p>
+                    </div>
+                </div>
+            </div>
+             <nav class="flex-1 px-4 py-4 space-y-2">
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="nexi.crm.dashboard.html">
+                    <span class="material-icons mr-3">dashboard</span>
+                    Dashboard
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="chats.html">
+                    <span class="material-icons mr-3">chat_bubble_outline</span>
+                    Chats
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg bg-primary-orange" href="contatos.html">
+                    <span class="material-icons mr-3">contacts</span>
+                    Contatos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="produtos.html">
+                    <span class="material-icons mr-3">inventory_2</span>
+                    Produtos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="relatorios.html">
+                    <span class="material-icons mr-3">bar_chart</span>
+                    Relatórios
+                </a>
+                 <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="meus-dados.html">
+                    <span class="material-icons mr-3">person_outline</span>
+                    Meus dados
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="empresa.html">
+                    <span class="material-icons mr-3">business</span>
+                    Empresa
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <a id="logout-button" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10 cursor-pointer">
+                    <span class="material-icons mr-3">logout</span>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 sm:p-10 overflow-y-auto">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gerenciar Contatos</h1>
+                    <p class="mt-1 text-gray-600 dark:text-gray-400">Adicione, edite e visualize os clientes da sua empresa.</p>
+                </div>
+                <button id="add-contact-btn" class="mt-4 sm:mt-0 w-full sm:w-auto flex items-center justify-center bg-primary-blue text-white px-4 py-2 rounded-md shadow hover:bg-primary-blue/90">
+                    <span class="material-icons mr-2">add</span>
+                    Adicionar Contato
+                </button>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="mb-4">
+                <div class="relative">
+                    <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    <input type="text" id="search-input" placeholder="Buscar por nome, CPF ou cidade..." class="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:ring-primary-orange focus:border-primary-orange">
+                </div>
+            </div>
+
+            <!-- Contacts Table -->
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Nome</th>
+                            <th scope="col" class="px-6 py-3">Celular</th>
+                            <th scope="col" class="px-6 py-3">CPF</th>
+                            <th scope="col" class="px-6 py-3">Cidade/UF</th>
+                            <th scope="col" class="px-6 py-3 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contacts-table-body">
+                       <!-- Rows will be injected here -->
+                    </tbody>
+                </table>
+                <div id="table-loader" class="text-center py-10 hidden">
+                    <div class="loader mx-auto"></div>
+                    <p class="mt-2">Carregando contatos...</p>
+                </div>
+                 <div id="no-contacts-message" class="text-center py-10 hidden">
+                    <span class="material-icons text-5xl text-gray-400">sentiment_dissatisfied</span>
+                    <p class="mt-2 font-semibold">Nenhum contato encontrado</p>
+                    <p class="text-sm">Clique em "Adicionar Contato" para começar.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="contact-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-40 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-900 dark:text-white">Adicionar Novo Contato</h3>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form id="contact-form" class="p-6 overflow-y-auto space-y-4">
+                 <input type="hidden" id="id_usuario">
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nome" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome Completo*</label>
+                        <input type="text" id="nome" required class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div>
+                        <label for="cpf" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CPF*</label>
+                        <input type="text" id="cpf" required class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                     <div>
+                        <label for="celular" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Celular</label>
+                        <input type="tel" id="celular" class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                     <div>
+                        <label for="data_nascimento" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data de Nascimento</label>
+                        <input type="date" id="data_nascimento" class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                    <div>
+                        <label for="cidade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cidade</label>
+                        <input type="text" id="cidade" class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                     <div>
+                        <label for="estado" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado (UF)</label>
+                        <input type="text" id="estado" maxlength="2" class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600">
+                    </div>
+                </div>
+                <div>
+                    <label for="observacoes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Observações</label>
+                    <textarea id="observacoes" rows="3" class="mt-1 w-full border rounded-md p-2 dark:bg-gray-700 dark:border-gray-600"></textarea>
+                </div>
+                 <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" id="cancel-modal-btn" class="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Cancelar</button>
+                    <button type="submit" id="save-contact-btn" class="bg-primary-orange text-white px-4 py-2 rounded-md hover:bg-primary-orange/90 flex items-center">
+                        <span id="save-btn-text">Salvar Contato</span>
+                        <div id="save-loader" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2 hidden"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-red-600 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-50">
+        <p id="toast-message"></p>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const API_CLIENTS_URL = 'https://script.google.com/macros/s/AKfycbwe2m8h2OP0bFpkItF4x5OYRT77Bkhkdvg-EEBEzT_fq59Yz6J8ulcX3iPq9KOjpfcwVg/exec';
+            const API_EMPRESAS_URL = 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec';
+            const API_KEY = '1526';
+
+            let allContacts = [];
+            let userData = null;
+
+            // --- Elements ---
+            const loaderPage = document.getElementById('loader-full-page');
+            const mainContent = document.getElementById('main-content');
+            const contactsTableBody = document.getElementById('contacts-table-body');
+            const tableLoader = document.getElementById('table-loader');
+            const noContactsMessage = document.getElementById('no-contacts-message');
+            const searchInput = document.getElementById('search-input');
+            const modal = document.getElementById('contact-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const contactForm = document.getElementById('contact-form');
+            const saveBtnText = document.getElementById('save-btn-text');
+            const saveLoader = document.getElementById('save-loader');
+            const saveContactBtn = document.getElementById('save-contact-btn');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            // --- Initial Checks ---
+            const userDataString = localStorage.getItem('nexiUser');
+            if (!userDataString) {
+                window.location.href = 'index.html';
+                return;
+            }
+            userData = JSON.parse(userDataString);
+            if (!userData.empresa_id) {
+                window.location.href = 'empresa.crm.nexi.html';
+                return;
+            }
+
+            // --- UI Population and Data Fetching ---
+            function populateSidebar() {
+                document.getElementById('user-name').textContent = userData.nome;
+                if (userData.foto) {
+                    document.getElementById('user-photo').src = userData.foto;
+                }
+            }
+
+            async function fetchCompanyName() {
+                 try {
+                    const response = await fetch(`${API_EMPRESAS_URL}?key=${API_KEY}&action=list_empresas&empresa_id=${userData.empresa_id}`);
+                    const result = await response.json();
+                    if (result.success && result.data.length > 0) {
+                        document.getElementById('company-name').textContent = result.data[0].nome;
+                    }
+                } catch (error) {
+                    document.getElementById('company-name').textContent = "Empresa";
+                }
+            }
+
+            async function fetchContacts() {
+                tableLoader.classList.remove('hidden');
+                noContactsMessage.classList.add('hidden');
+                contactsTableBody.innerHTML = '';
+                try {
+                    const response = await fetch(`${API_CLIENTS_URL}?action=getAllByCompany&id_empresa=${userData.empresa_id}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        allContacts = result.data || [];
+                        renderContacts(allContacts);
+                    } else {
+                        showToast(result.message || 'Erro ao buscar contatos.');
+                        renderContacts([]);
+                    }
+                } catch (error) {
+                    showToast('Falha na comunicação com a API de contatos.');
+                    renderContacts([]);
+                } finally {
+                    tableLoader.classList.add('hidden');
+                }
+            }
+
+            function renderContacts(contacts) {
+                contactsTableBody.innerHTML = '';
+                if (contacts.length === 0) {
+                    noContactsMessage.classList.remove('hidden');
+                    return;
+                }
+                noContactsMessage.classList.add('hidden');
+                
+                contacts.forEach(contact => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600';
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">${contact.nome || ''}</td>
+                        <td class="px-6 py-4">${contact.celular || 'N/A'}</td>
+                        <td class="px-6 py-4">${contact.cpf || 'N/A'}</td>
+                        <td class="px-6 py-4">${contact.cidade || ''}${contact.estado ? `/${contact.estado}` : ''}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button class="edit-btn font-medium text-primary-orange hover:underline">Editar</button>
+                        </td>
+                    `;
+                    tr.querySelector('.edit-btn').addEventListener('click', () => openModal(contact));
+                    contactsTableBody.appendChild(tr);
+                });
+            }
+
+            // --- Modal Logic ---
+            function openModal(contact = null) {
+                contactForm.reset();
+                if (contact) {
+                    modalTitle.textContent = 'Editar Contato';
+                    document.getElementById('id_usuario').value = contact.id_usuario || '';
+                    document.getElementById('nome').value = contact.nome || '';
+                    document.getElementById('cpf').value = contact.cpf || '';
+                    document.getElementById('celular').value = contact.celular || '';
+                    // Correctly format date for input type="date"
+                    const birthDate = contact.data_nascimento ? new Date(contact.data_nascimento).toISOString().split('T')[0] : '';
+                    document.getElementById('data_nascimento').value = birthDate;
+                    document.getElementById('cidade').value = contact.cidade || '';
+                    document.getElementById('estado').value = contact.estado || '';
+                    document.getElementById('observacoes').value = contact.observacoes || '';
+                } else {
+                    modalTitle.textContent = 'Adicionar Novo Contato';
+                    document.getElementById('id_usuario').value = '';
+                }
+                modal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            // --- Form Submission ---
+            async function handleFormSubmit(event) {
+                event.preventDefault();
+                saveContactBtn.disabled = true;
+                saveBtnText.classList.add('hidden');
+                saveLoader.classList.remove('hidden');
+
+                const url = new URL(API_CLIENTS_URL);
+                url.searchParams.append('action', 'register');
+                url.searchParams.append('id_empresa', userData.empresa_id);
+
+                const fields = ['id_usuario', 'nome', 'cpf', 'celular', 'data_nascimento', 'cidade', 'estado', 'observacoes'];
+                fields.forEach(id => {
+                    const value = document.getElementById(id).value;
+                    if (value) url.searchParams.append(id, value);
+                });
+                
+                try {
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    if(result.success) {
+                        showToast(result.message, true);
+                        closeModal();
+                        fetchContacts();
+                    } else {
+                        showToast(result.message || 'Ocorreu um erro.');
+                    }
+                } catch (error) {
+                    showToast('Falha ao salvar. Verifique sua conexão.');
+                } finally {
+                    saveContactBtn.disabled = false;
+                    saveBtnText.classList.remove('hidden');
+                    saveLoader.classList.add('hidden');
+                }
+            }
+
+            // --- Event Listeners ---
+            document.getElementById('add-contact-btn').addEventListener('click', () => openModal());
+            document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+            document.getElementById('cancel-modal-btn').addEventListener('click', closeModal);
+            contactForm.addEventListener('submit', handleFormSubmit);
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = allContacts.filter(c => 
+                    c.nome?.toLowerCase().includes(term) ||
+                    c.cpf?.toLowerCase().includes(term) ||
+                    c.cidade?.toLowerCase().includes(term)
+                );
+                renderContacts(filtered);
+            });
+            document.getElementById('logout-button').addEventListener('click', () => {
+                localStorage.removeItem('nexiUser');
+                window.location.href = 'index.html';
+            });
+            
+             // --- Utils ---
+            function showToast(message, isSuccess = false) {
+                toastMessage.textContent = message;
+                toast.classList.remove('bg-red-600', 'bg-green-600', 'opacity-0', 'translate-y-10');
+                toast.classList.add(isSuccess ? 'bg-green-600' : 'bg-red-600', 'opacity-100', 'translate-y-0');
+
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-10');
+                }, 3000);
+            }
+
+            // --- Initial Load ---
+            populateSidebar();
+            await fetchCompanyName();
+            await fetchContacts();
+            loaderPage.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+        });
+    </script>
+
+</body>
+
+</html>

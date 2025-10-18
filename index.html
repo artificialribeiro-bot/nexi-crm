@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        display: ["Poppins", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Simple transition for showing/hiding elements */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md p-6 sm:p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+
+        <!-- Logo and Header -->
+        <div class="text-center">
+            <img alt="Logo Nexi CRM" class="w-48 mx-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcZvezugXBlNrPDcJy9BIkqhomNN1jporPQHBAuVaGvwMxrapnSVrr2F1iDmio5gShLqepWaFhphp3qUvfhG25cHsqfHxKeFe0JOiIzGsHQJNApOjhklKlOrESpORzdmC9Mij5DqWyP5puflxDu3ju7da60ma2gL_43w3BeBU4LC7IS5wT6uWh3InE9dHdudmRF8txUbI5m9PMvVZeetZ4Ec3Rxr1d8AlK7FaSVyYDZ-ElOg9aZ9B20THvoarH4gpUD26NWK8cac" />
+            <h2 id="form-title" class="mt-6 text-2xl font-bold text-gray-900 dark:text-white">
+                Bem-vindo de volta!
+            </h2>
+            <p id="form-subtitle" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Faça login para continuar no Nexi CRM.
+            </p>
+        </div>
+
+        <!-- Notification Area -->
+        <div id="notification" class="hidden p-4 rounded-md text-sm"></div>
+
+        <!-- Login Form -->
+        <div id="login-container" class="fade-in">
+            <form id="login-form" class="mt-8 space-y-6">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label class="sr-only" for="login-phone">Celular</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons text-gray-400">phone</span>
+                            </div>
+                            <input id="login-phone" name="phone" type="tel" autocomplete="tel" required
+                                class="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-primary-orange focus:border-primary-orange focus:z-10 sm:text-sm"
+                                placeholder="Celular (ex: 55119...)" />
+                        </div>
+                    </div>
+                    <div class="pt-4">
+                        <label class="sr-only" for="login-password">Senha</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons text-gray-400">lock</span>
+                            </div>
+                            <input id="login-password" name="password" type="password" autocomplete="current-password"
+                                required
+                                class="appearance-none rounded-md relative block w-full px-3 py-3 pl-10 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-primary-orange focus:border-primary-orange focus:z-10 sm:text-sm"
+                                placeholder="Senha" />
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox"
+                            class="h-4 w-4 text-primary-orange focus:ring-primary-orange border-gray-300 rounded" />
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                            Lembrar-me
+                        </label>
+                    </div>
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-primary-orange hover:text-primary-orange/80">
+                            Esqueceu a senha?
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-md text-white bg-primary-blue hover:bg-primary-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue">
+                        Entrar
+                    </button>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Não tem uma conta?
+                        <a href="#" id="show-register-link"
+                            class="font-medium text-primary-orange hover:text-primary-orange/80">
+                            Criar conta
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="register-container" class="hidden fade-in">
+             <form id="register-form" class="space-y-6">
+                <!-- Step 1: Name -->
+                <div id="step-1" class="register-step">
+                    <h3 class="text-lg font-medium text-center text-gray-800 dark:text-gray-200">Qual é o seu nome completo?</h3>
+                     <div class="mt-4">
+                        <label class="sr-only" for="register-nome">Nome completo</label>
+                        <input id="register-nome" name="nome" type="text" autocomplete="name" required class="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-primary-orange focus:border-primary-orange sm:text-sm" placeholder="Nome completo" />
+                    </div>
+                </div>
+
+                <!-- Step 2: Contact -->
+                 <div id="step-2" class="hidden register-step">
+                    <h3 class="text-lg font-medium text-center text-gray-800 dark:text-gray-200">Informações de contato</h3>
+                     <div class="mt-4 space-y-4">
+                         <div>
+                             <label class="sr-only" for="register-celular">Celular</label>
+                             <input id="register-celular" name="celular" type="tel" autocomplete="tel" required class="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-primary-orange focus:border-primary-orange sm:text-sm" placeholder="Celular (ex: 55119...)" />
+                         </div>
+                         <div>
+                             <label class="sr-only" for="register-email">Email (opcional)</label>
+                             <input id="register-email" name="email" type="email" autocomplete="email" class="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-primary-orange focus:border-primary-orange sm:text-sm" placeholder="Email (opcional)" />
+                         </div>
+                     </div>
+                 </div>
+                
+                 <!-- Step 3: Photo -->
+                 <div id="step-3" class="hidden register-step">
+                     <h3 class="text-lg font-medium text-center text-gray-800 dark:text-gray-200">Adicione uma foto (opcional)</h3>
+                     <div class="mt-4 flex flex-col items-center">
+                         <img id="image-preview" src="https://placehold.co/128x128/e2e8f0/a0aec0?text=Perfil" class="w-32 h-32 rounded-full object-cover mb-4 bg-gray-200">
+                         <label for="register-foto" class="cursor-pointer bg-white dark:bg-gray-700 text-primary-orange font-semibold py-2 px-4 border border-primary-orange rounded-md hover:bg-primary-orange hover:text-white transition-colors duration-300">
+                             Selecionar Imagem
+                         </label>
+                         <input id="register-foto" name="foto-file" type="file" class="hidden" accept="image/*" />
+                     </div>
+                 </div>
+
+
+                 <!-- Step 4: Password -->
+                 <div id="step-4" class="hidden register-step">
+                     <h3 class="text-lg font-medium text-center text-gray-800 dark:text-gray-200">Crie sua senha</h3>
+                     <div class="mt-4">
+                         <label class="sr-only" for="register-password">Senha</label>
+                         <input id="register-password" name="senha" type="password" autocomplete="new-password" required class="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-white dark:bg-gray-700 focus:outline-none focus:ring-primary-orange focus:border-primary-orange sm:text-sm" placeholder="Senha" />
+                     </div>
+                 </div>
+
+                 <!-- Step 5: Terms -->
+                 <div id="step-5" class="hidden register-step">
+                     <h3 class="text-lg font-medium text-center text-gray-800 dark:text-gray-200">Quase lá!</h3>
+                     <div class="mt-6 flex items-start">
+                         <div class="flex items-center h-5">
+                             <input id="terms" name="terms" type="checkbox" required class="focus:ring-primary-orange h-4 w-4 text-primary-orange border-gray-300 rounded" />
+                         </div>
+                         <div class="ml-3 text-sm">
+                             <label for="terms" class="font-medium text-gray-700 dark:text-gray-300">Eu aceito os</label>
+                             <a href="#" class="font-medium text-primary-orange hover:underline">Termos Nexi CRM</a>.
+                         </div>
+                     </div>
+                 </div>
+
+
+                <!-- Navigation and Submission -->
+                <div class="mt-6 flex items-center justify-between">
+                     <button type="button" id="back-btn" class="text-sm font-medium text-primary-orange hover:text-primary-orange/80 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Voltar</button>
+                     <button type="button" id="next-btn" class="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-blue hover:bg-primary-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue">Avançar</button>
+                    <button type="submit" id="submit-register-btn" class="hidden w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-blue hover:bg-primary-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue">Criar minha conta</button>
+                </div>
+
+                 <div class="text-center mt-4">
+                     <p class="text-sm text-gray-600 dark:text-gray-400">
+                         Já tem uma conta?
+                         <a href="#" id="show-login-link" class="font-medium text-primary-orange hover:text-primary-orange/80">
+                             Fazer login
+                         </a>
+                     </p>
+                 </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzxJFdRr7kqPAQUllOEN6WjroFGsgqvN25FleCDpHyOxQ3r1n_zBMKFblFNt663CVXj/exec';
+            const API_KEY = '1526';
+            const IMGBB_API_KEY = 'ade4db9dec227671abd61cac5a04b23c';
+
+
+            // --- DOM ELEMENTS ---
+            const loginContainer = document.getElementById('login-container');
+            const registerContainer = document.getElementById('register-container');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const showRegisterLink = document.getElementById('show-register-link');
+            const showLoginLink = document.getElementById('show-login-link');
+            const notification = document.getElementById('notification');
+            const formTitle = document.getElementById('form-title');
+            const formSubtitle = document.getElementById('form-subtitle');
+
+            // Registration step elements
+            const steps = document.querySelectorAll('.register-step');
+            const nextBtn = document.getElementById('next-btn');
+            const backBtn = document.getElementById('back-btn');
+            const submitRegisterBtn = document.getElementById('submit-register-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const registerFotoInput = document.getElementById('register-foto');
+            
+            let currentStep = 0;
+            let imageBase64 = null;
+
+            // --- UI FUNCTIONS ---
+            function showView(view) {
+                hideNotification();
+                if (view === 'register') {
+                    loginContainer.classList.add('hidden');
+                    registerContainer.classList.remove('hidden');
+                    formTitle.textContent = 'Crie sua conta';
+                    formSubtitle.textContent = 'É rápido e fácil.';
+                    currentStep = 0;
+                    updateStepView();
+                } else { // 'login'
+                    registerContainer.classList.add('hidden');
+                    loginContainer.classList.remove('hidden');
+                    formTitle.textContent = 'Bem-vindo de volta!';
+                    formSubtitle.textContent = 'Faça login para continuar no Nexi CRM.';
+                }
+            }
+
+            function updateStepView() {
+                steps.forEach((step, index) => {
+                    step.classList.toggle('hidden', index !== currentStep);
+                });
+                backBtn.disabled = currentStep === 0;
+                nextBtn.classList.toggle('hidden', currentStep === steps.length - 1);
+                submitRegisterBtn.classList.toggle('hidden', currentStep !== steps.length - 1);
+            }
+
+            function showNotification(message, isError = false) {
+                notification.textContent = message;
+                notification.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+                if (isError) {
+                    notification.classList.add('bg-red-100', 'text-red-700');
+                } else {
+                    notification.classList.add('bg-green-100', 'text-green-700');
+                }
+            }
+
+            function hideNotification() {
+                notification.classList.add('hidden');
+            }
+            
+            function validateCurrentStep() {
+                const currentStepElement = steps[currentStep];
+                const inputs = currentStepElement.querySelectorAll('input[required]');
+                for (const input of inputs) {
+                    if (!input.value.trim()) {
+                         showNotification(`Por favor, preencha o campo: ${input.placeholder}`, true);
+                        return false;
+                    }
+                     if(input.type === 'checkbox' && !input.checked) {
+                        showNotification('Você precisa aceitar os termos para continuar.', true);
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+
+            // --- EVENT LISTENERS ---
+            showRegisterLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView('register');
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView('login');
+            });
+
+            nextBtn.addEventListener('click', () => {
+                 if (validateCurrentStep()) {
+                    hideNotification();
+                    if (currentStep < steps.length - 1) {
+                        currentStep++;
+                        updateStepView();
+                    }
+                }
+            });
+
+            backBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateStepView();
+                }
+            });
+
+            registerFotoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Por favor, selecione um arquivo de imagem.', true);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    imagePreview.src = reader.result;
+                    imageBase64 = reader.result; 
+                };
+                reader.readAsDataURL(file);
+            });
+
+            loginForm.addEventListener('submit', handleLogin);
+            registerForm.addEventListener('submit', handleRegister);
+
+            // --- API HANDLERS ---
+            async function handleLogin(e) {
+                e.preventDefault();
+                const button = e.target.querySelector('button[type="submit"]');
+                const originalButtonText = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Entrando...';
+
+                const phone = document.getElementById('login-phone').value;
+                const password = document.getElementById('login-password').value;
+
+                if (!phone || !password) {
+                    showNotification('Celular e senha são obrigatórios.', true);
+                    button.disabled = false;
+                    button.textContent = originalButtonText;
+                    return;
+                }
+
+                const url = `${API_BASE_URL}?action=login&key=${API_KEY}&celular=${encodeURIComponent(phone)}&senha=${encodeURIComponent(password)}`;
+
+                try {
+                    const response = await fetch(url);
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showNotification(result.message);
+                        localStorage.setItem('nexiUser', JSON.stringify(result.data));
+                        setTimeout(() => {
+                           window.location.href = 'nexicrm.segury.html';
+                        }, 1500);
+                    } else {
+                        showNotification(result.message || 'Erro no login. Verifique suas credenciais.', true);
+                    }
+                } catch (error) {
+                    console.error('Login API error:', error);
+                    showNotification('Não foi possível conectar ao servidor. Tente novamente mais tarde.', true);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = originalButtonText;
+                }
+            }
+            
+            async function handleRegister(e) {
+                e.preventDefault();
+                if (!validateCurrentStep()) return;
+
+                const button = e.target.querySelector('button[type="submit"]');
+                const originalButtonText = button.textContent;
+                button.disabled = true;
+                
+                let fotoUrl = '';
+
+                // 1. Upload image to imgbb if one is selected
+                if (imageBase64) {
+                    try {
+                        button.textContent = 'Enviando foto...';
+                        const base64Data = imageBase64.split(',')[1]; // Remove data URL prefix
+                        
+                        const formData = new FormData();
+                        formData.append('key', IMGBB_API_KEY);
+                        formData.append('image', base64Data);
+
+                        const response = await fetch('https://api.imgbb.com/1/upload', {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            fotoUrl = result.data.url;
+                        } else {
+                            throw new Error(result.error?.message || 'Falha ao enviar a imagem.');
+                        }
+                    } catch (error) {
+                        console.error('Imgbb API error:', error);
+                        showNotification(`Erro no upload da foto: ${error.message}`, true);
+                        button.disabled = false;
+                        button.textContent = originalButtonText;
+                        return;
+                    }
+                }
+
+                // 2. Register user with Nexi CRM API
+                try {
+                    button.textContent = 'Criando conta...';
+                    const registerFormData = new FormData(registerForm);
+                    const params = new URLSearchParams({
+                        action: 'register',
+                        key: API_KEY,
+                    });
+
+                    for (const [key, value] of registerFormData.entries()) {
+                        if (value && key !== 'terms' && key !== 'foto-file') {
+                            params.append(key, value);
+                        }
+                    }
+                    
+                    if (fotoUrl) {
+                        params.append('foto', fotoUrl);
+                    }
+
+                    const url = `${API_BASE_URL}?${params.toString()}`;
+
+                    const nexiResponse = await fetch(url);
+                    const nexiResult = await nexiResponse.json();
+
+                    if (nexiResult.success) {
+                        showNotification(nexiResult.message);
+                        localStorage.setItem('nexiUser', JSON.stringify(nexiResult.data));
+                        setTimeout(() => {
+                            window.location.href = 'nexicrm.segury.html';
+                        }, 1500);
+                    } else {
+                        showNotification(nexiResult.message || 'Erro ao criar conta.', true);
+                    }
+                } catch (error) {
+                    console.error('Registration API error:', error);
+                    showNotification('Não foi possível conectar ao servidor. Tente novamente mais tarde.', true);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = originalButtonText;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+

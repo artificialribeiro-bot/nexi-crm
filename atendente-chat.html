@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Atendimento</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f0f2f5",
+                        "background-dark": "#111b21",
+                        "chat-bubble-sent": "#d9fdd3",
+                        "chat-bubble-sent-dark": "#005c4b",
+                        "chat-bubble-received": "#ffffff",
+                        "chat-bubble-received-dark": "#202c33",
+                    },
+                    fontFamily: {
+                        sans: ["Poppins", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a2b45;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+         .btn-spinner {
+            width: 1rem;
+            height: 1rem;
+            border-width: 2px;
+            border-color: white;
+            border-top-color: transparent;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom scrollbar for product list */
+        #product-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        #product-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        #product-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        #product-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark">
+    <div id="loader-full-page" class="fixed inset-0 bg-white/80 dark:bg-black/80 flex justify-center items-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <div id="main-content" class="flex h-screen hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-primary-blue text-white flex flex-col flex-shrink-0">
+            <div class="p-6 text-center">
+                <a href="nexi.crm.dashboard.html"><img alt="Logo Nexi CRM" class="w-32 mx-auto"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcZvezugXBlNrPDcJy9BIkqhomNN1jporPQHBAuVaGvwMxrapnSVrr2F1iDmio5gShLqepWaFhphp3qUvfhG25cHsqfHxKeFe0JOiIzGsHQJNApOjhklKlOrESpORzdmC9Mij5DqWyP5puflxDu3ju7da60ma2gL_43w3BeBU4LC7IS5wT6uWh3InE9dHdudmRF8txUbI5m9PMVZeetZ4Ec3Rxr1d8AlK7FaSVyYDZ-ElOg9aZ9B20THvoarH4gpUD26NWK8cac" /></a>
+            </div>
+            <div class="p-6 border-t border-b border-white/10">
+                <div class="flex items-center">
+                    <img id="user-photo" alt="Foto do Usuário" class="w-12 h-12 rounded-full object-cover" src="https://placehold.co/48x48/ffffff/1a2b45?text=U" />
+                    <div class="ml-4">
+                        <p id="user-name" class="font-semibold">Carregando...</p>
+                        <p id="user-company-name" class="text-sm text-gray-400">...</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="nexi.crm.dashboard.html">
+                    <span class="material-icons mr-3">dashboard</span>Dashboard
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg bg-primary-orange" href="chats.html">
+                    <span class="material-icons mr-3">chat_bubble_outline</span>Chats
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="contatos.html">
+                    <span class="material-icons mr-3">contacts</span>Contatos
+                </a>
+                 <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="produtos.html">
+                    <span class="material-icons mr-3">inventory_2</span>Produtos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="relatorios.html">
+                    <span class="material-icons mr-3">bar_chart</span>Relatórios
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="meus-dados.html">
+                    <span class="material-icons mr-3">person_outline</span>Meus dados
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="empresa.html">
+                    <span class="material-icons mr-3">business</span>Empresa
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <a id="logout-button" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10 cursor-pointer">
+                    <span class="material-icons mr-3">logout</span>Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Chat Interface -->
+        <div class="flex-1 flex flex-col">
+            <!-- Chat Header -->
+            <header class="bg-white dark:bg-gray-800 p-3 flex items-center shadow-md flex-shrink-0 z-10 border-b dark:border-gray-700">
+                <div class="flex-1">
+                    <h2 id="chat-title" class="font-semibold text-lg text-gray-900 dark:text-white">Carregando Chat...</h2>
+                    <p id="chat-status" class="text-xs text-gray-500 dark:text-gray-400">Status: em_atendimento</p>
+                </div>
+            </header>
+
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Messages Area -->
+                <main id="messages-container" class="flex-1 p-4 overflow-y-auto bg-background-light dark:bg-background-dark space-y-4">
+                    <!-- Messages will be injected here -->
+                </main>
+
+                <!-- Right Details Panel -->
+                <aside class="w-80 bg-white dark:bg-gray-800 border-l dark:border-gray-700 flex flex-col p-4 overflow-y-auto">
+                    <div class="text-center">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Detalhes do Atendimento</h3>
+                    </div>
+                    
+                    <div class="mt-4 border-t dark:border-gray-600 pt-4 space-y-1">
+                        <h4 class="font-semibold text-gray-700 dark:text-gray-300">Informações do Cliente</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2"><strong>Nome:</strong> <span id="client-name">...</span></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400"><strong>Email:</strong> <span id="client-email">...</span></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400"><strong>CPF:</strong> <span id="client-cpf">...</span></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400"><strong>Celular:</strong> <span id="client-celular">...</span></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400"><strong>Local:</strong> <span id="client-local">...</span></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400"><strong>ID do Cliente:</strong> <span id="client-id">...</span></p>
+                    </div>
+
+                    <div class="mt-4 border-t dark:border-gray-600 pt-4">
+                        <h4 class="font-semibold text-gray-700 dark:text-gray-300">Observações Internas</h4>
+                        <textarea id="observations-textarea" class="w-full mt-2 p-2 border rounded-md h-24 dark:bg-gray-700 dark:border-gray-600 focus:ring-primary-orange focus:border-primary-orange" placeholder="Adicione notas sobre o atendimento..."></textarea>
+                        <button id="add-observation-btn" class="w-full mt-2 bg-primary-blue text-white px-4 py-2 rounded-md shadow hover:bg-primary-blue/90 font-semibold text-sm">Adicionar Nota</button>
+                    </div>
+                    
+                    <div class="mt-4 border-t dark:border-gray-600 pt-4 space-y-2">
+                         <h4 class="font-semibold text-gray-700 dark:text-gray-300">Ações do Chat</h4>
+                        <button id="finish-chat-btn" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow font-semibold flex items-center justify-center">
+                            <span class="material-icons mr-2">check_circle</span> Finalizar Atendimento
+                        </button>
+                         <button id="cancel-chat-btn" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md shadow font-semibold flex items-center justify-center">
+                             <span class="material-icons mr-2">cancel</span> Cancelar Atendimento
+                        </button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Message Input -->
+            <footer class="bg-white dark:bg-gray-800 border-t dark:border-gray-700 p-3 flex items-center flex-shrink-0">
+                 <input type="file" id="attachment-input" class="hidden"/>
+                 <button id="attachment-btn" class="text-gray-500 dark:text-gray-400 hover:text-primary-orange p-2 rounded-full">
+                    <span class="material-icons">attach_file</span>
+                </button>
+                 <button id="product-btn" class="text-gray-500 dark:text-gray-400 hover:text-primary-orange p-2 rounded-full">
+                    <span class="material-icons">storefront</span>
+                </button>
+                <input type="text" id="message-input" placeholder="Digite sua mensagem..." class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2 mx-2 border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-orange">
+                <button id="send-button" class="bg-primary-orange text-white rounded-full p-3 flex items-center justify-center">
+                    <span class="material-icons">send</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+    
+     <!-- Product Selection Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-gray-900/80 flex items-center justify-center p-4 z-40 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg flex flex-col">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Selecionar Produto ou Serviço</h3>
+                <button id="close-product-modal" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">&times;</button>
+            </div>
+            <div class="p-4">
+                 <input type="text" id="product-search-input" placeholder="Pesquisar por nome..."
+                    class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-primary-orange focus:border-primary-orange">
+            </div>
+            <div id="product-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+                <!-- Product list will be populated here -->
+            </div>
+             <div id="product-loader" class="text-center py-10 hidden">
+                <div class="loader mx-auto"></div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-red-600 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-50">
+        <p id="toast-message"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- APIs & Config ---
+            const API_CHAT_URL = 'https://astounding-donut-e0ea90.netlify.app/.netlify/functions/proxy';
+            const API_CLIENTES_URL = 'https://script.google.com/macros/s/AKfycbwe2m8h2OP0bFpkItF4x5OYRT77Bkhkdvg-EEBEzT_fq59Yz6J8ulcX3iPq9KOjpfcwVg/exec';
+            const API_EMPRESAS_URL = 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec';
+            const API_PRODUTOS_URL = 'https://script.google.com/macros/s/AKfycbyEFH261J3qybQfBslMZiFQyJh1dJnFtsgswekugKYgkrsV6bxXcMvFu_YGw5K-fS4zLQ/exec';
+            const API_KEY = '1526';
+            const CHAT_REFRESH_INTERVAL = 7000; // 7 seconds
+
+            // --- State ---
+            let userData = null;
+            let chatId = null;
+            let pollingInterval = null;
+            let lastMessageTimestamp = 0;
+            let allClients = [];
+            let allProducts = [];
+
+            // --- Elements ---
+            const loaderPage = document.getElementById('loader-full-page');
+            const mainContent = document.getElementById('main-content');
+            const messagesContainer = document.getElementById('messages-container');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            const attachmentBtn = document.getElementById('attachment-btn');
+            const attachmentInput = document.getElementById('attachment-input');
+            const productBtn = document.getElementById('product-btn');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const chatTitleEl = document.getElementById('chat-title');
+            const chatStatusEl = document.getElementById('chat-status');
+            const clientIdEl = document.getElementById('client-id');
+            const clientEmailEl = document.getElementById('client-email');
+            const clientNameEl = document.getElementById('client-name');
+            const clientCpfEl = document.getElementById('client-cpf');
+            const clientCelularEl = document.getElementById('client-celular');
+            const clientLocalEl = document.getElementById('client-local');
+            const observationsTextarea = document.getElementById('observations-textarea');
+            const addObservationBtn = document.getElementById('add-observation-btn');
+            const finishChatBtn = document.getElementById('finish-chat-btn');
+            const cancelChatBtn = document.getElementById('cancel-chat-btn');
+            const productModal = document.getElementById('product-modal');
+            const closeProductModalBtn = document.getElementById('close-product-modal');
+            const productList = document.getElementById('product-list');
+            const productSearchInput = document.getElementById('product-search-input');
+            const productLoader = document.getElementById('product-loader');
+
+            // --- Helper Functions ---
+            function normalizeMessage(msg) {
+                const normalized = { ...msg };
+
+                if (!normalized.sender_name) {
+                    const client = allClients.find(c => c.id_usuario === msg.sender_user_id);
+                    if (client) {
+                        normalized.sender_name = client.nome;
+                    } else if (msg.sender_user_id === userData.id) {
+                        normalized.sender_name = userData.nome;
+                    } else {
+                        normalized.sender_name = msg.message || msg.sender_user_id || 'Desconhecido';
+                    }
+                }
+                
+                if (normalized.attachment && typeof normalized.attachment === 'string') {
+                    normalized.message = normalized.attachment;
+                }
+
+                if (normalized.created_at === false && normalized[""]) {
+                    normalized.created_at = normalized[""];
+                }
+                
+                const attachmentIdMatch = (normalized.message || '').match(/\*\*attachment_id:([a-zA-Z0-9_-]+)\*\*/);
+                if(attachmentIdMatch) {
+                    normalized.is_attachment_placeholder = true;
+                    normalized.attachment_id = attachmentIdMatch[1];
+                }
+
+                const productIdMatch = (normalized.message || '').match(/\*\*product_id:([a-zA-Z0-9_-]+)\*\*/);
+                if(productIdMatch) {
+                    normalized.is_product_placeholder = true;
+                    normalized.product_id = productIdMatch[1];
+                }
+
+                return normalized;
+            }
+
+            // --- Initial Checks ---
+            function initialChecks() {
+                const userDataString = localStorage.getItem('nexiUser');
+                if (!userDataString) {
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                userData = JSON.parse(userDataString);
+
+                const urlParams = new URLSearchParams(window.location.search);
+                chatId = urlParams.get('chatId') || urlParams.get('chat_id');
+                if (!chatId) {
+                    showToast("ID do chat não encontrado.");
+                    setTimeout(() => window.location.href = 'chats.html', 2000);
+                    return false;
+                }
+                return true;
+            }
+
+            // --- UI Functions ---
+            async function populateSidebar() {
+                document.getElementById('user-name').textContent = userData.nome;
+                if (userData.foto) document.getElementById('user-photo').src = userData.foto;
+                if (!userData.empresa_id) return;
+                try {
+                    const response = await fetch(`${API_EMPRESAS_URL}?key=${API_KEY}&action=list_empresas&empresa_id=${userData.empresa_id}`);
+                    const result = await response.json();
+                    if (result.success && result.data.length > 0) {
+                        document.getElementById('user-company-name').textContent = result.data[0].nome;
+                    }
+                } catch (e) {
+                     document.getElementById('user-company-name').textContent = "Nexi CRM";
+                }
+            }
+            
+            async function addMessage(msg, isNew = false) {
+                 const isFromAttendant = msg.sender_user_id === userData.id;
+                 const messageDiv = document.createElement('div');
+                 messageDiv.className = `flex ${isFromAttendant ? 'justify-end' : 'justify-start'}`;
+
+                 const bubbleColor = isFromAttendant 
+                    ? 'bg-chat-bubble-sent dark:bg-chat-bubble-sent-dark' 
+                    : 'bg-chat-bubble-received dark:bg-chat-bubble-received-dark';
+                
+                 let messageContentHTML = `<p class="text-sm">${msg.message}</p>`;
+
+                 if (msg.is_attachment_placeholder && msg.attachment_id) {
+                    const attResult = await fetchAttachmentDetails(msg.attachment_id);
+                    messageContentHTML = attResult ? createAttachmentHTML(attResult) : `<p class="text-sm text-red-500">Falha ao carregar anexo.</p>`;
+                 }
+                 
+                 if (msg.is_product_placeholder && msg.product_id) {
+                    const productResult = await fetchProductDetails(msg.product_id);
+                    messageContentHTML = productResult ? createProductHTML(productResult) : `<p class="text-sm text-red-500">Falha ao carregar produto.</p>`;
+                 }
+
+                 messageDiv.innerHTML = `
+                    <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow ${bubbleColor} text-black dark:text-white">
+                        <p class="font-bold text-xs text-primary-orange">${msg.sender_name}</p>
+                        ${messageContentHTML}
+                    </div>
+                `;
+                 messagesContainer.appendChild(messageDiv);
+                 if(isNew) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                 }
+            }
+            
+            function createAttachmentHTML(attachmentDetails) {
+                 return `<div class="mt-2 border-t dark:border-gray-500 pt-2">
+                            <a href="${attachmentDetails.public_url}" target="_blank" class="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                <span class="material-icons mr-2">attach_file</span>
+                                ${attachmentDetails.file_name}
+                            </a>
+                        </div>`;
+            }
+
+            function createProductHTML(product) {
+                const price = parseFloat(product.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                return `<div class="mt-2 border-t dark:border-gray-500 pt-2 flex items-start space-x-3">
+                            <img src="${product.foto1 || 'https://placehold.co/64x64/eee/ccc?text=Produto'}" class="w-16 h-16 rounded-md object-cover"/>
+                            <div>
+                                <p class="font-bold">${product.nome}</p>
+                                <p class="text-xs">${product.descricao.substring(0, 50)}...</p>
+                                <p class="text-sm font-semibold mt-1">${price}</p>
+                            </div>
+                       </div>`;
+            }
+            
+            async function fetchAndRenderChat() {
+                try {
+                    const chatDetailsUrl = `${API_CHAT_URL}?action=get_chat&key=${API_KEY}&chat_id=${chatId}`;
+                    const chatRes = await fetch(chatDetailsUrl);
+                    const chatResult = await chatRes.json();
+                    if (!chatResult.success) throw new Error(chatResult.message || 'Falha ao buscar detalhes do chat.');
+                    const chatData = chatResult.data;
+                    updateChatDetailsUI(chatData);
+
+                    await fetchCompanyClients();
+                    const client = allClients.find(c => c.id_usuario === chatData.creator_user_id);
+                    if(client) {
+                        updateClientDetailsUI(client);
+                    } else {
+                         updateClientDetailsUI({
+                            nome: chatData.title.replace('Suporte para ',''),
+                            creator_email: chatData.creator_email,
+                            id_usuario: chatData.creator_user_id,
+                         });
+                    }
+
+                    const messagesUrl = `${API_CHAT_URL}?action=get_messages&key=${API_KEY}&chat_id=${chatId}&page_size=200`;
+                    const messagesRes = await fetch(messagesUrl);
+                    const messagesResult = await messagesRes.json();
+                     if (!messagesResult.success || !messagesResult.data.messages) {
+                        return;
+                    }
+                    
+                    messagesContainer.innerHTML = '';
+                    const rawMessages = messagesResult.data.messages || [];
+                    const messages = rawMessages.map(normalizeMessage);
+                    messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+                    for(const msg of messages) await addMessage(msg);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    
+                    if (messages.length > 0) {
+                        const lastMsg = messages[messages.length - 1];
+                        lastMessageTimestamp = new Date(lastMsg.created_at).getTime();
+                    }
+                } catch (error) {
+                    showToast(error.message);
+                    clearInterval(pollingInterval);
+                }
+            }
+            
+             async function fetchCompanyClients() {
+                if (allClients.length > 0) return;
+                if (!userData.empresa_id) return;
+                try {
+                    const url = `${API_CLIENTES_URL}?action=getAllByCompany&id_empresa=${userData.empresa_id}`;
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    if (result.success && result.data) allClients = result.data;
+                } catch (e) { console.error("Failed to fetch company clients", e); }
+            }
+            
+            function updateClientDetailsUI(client) {
+                clientNameEl.textContent = client.nome || 'N/A';
+                clientEmailEl.textContent = client.creator_email || 'N/A';
+                clientCpfEl.textContent = client.cpf || 'N/A';
+                clientCelularEl.textContent = client.celular || 'N/A';
+                clientLocalEl.textContent = client.cidade && client.estado ? `${client.cidade} / ${client.estado}` : 'N/A';
+                clientIdEl.textContent = client.id_usuario || 'N/A';
+            }
+
+             function updateChatDetailsUI(data) {
+                chatTitleEl.textContent = data.title;
+                const status = data.status || data.updated_at;
+                chatStatusEl.textContent = `Status: ${status}`;
+                observationsTextarea.value = data.observations || '';
+                
+                if (status === 'fechado' || status === 'cancelado') {
+                    disableChatInputs();
+                }
+            }
+
+            function disableChatInputs() {
+                messageInput.disabled = true;
+                sendButton.disabled = true;
+                attachmentBtn.disabled = true;
+                productBtn.disabled = true;
+                observationsTextarea.disabled = true;
+                addObservationBtn.disabled = true;
+                finishChatBtn.disabled = true;
+                cancelChatBtn.disabled = true;
+                chatStatusEl.textContent += " (Encerrado)";
+                chatStatusEl.classList.add("text-red-500", "font-bold");
+                clearInterval(pollingInterval);
+            }
+
+            // --- API Functions ---
+            async function sendMessage(message, file = null) {
+                sendButton.disabled = true;
+                let messageToSend = message;
+
+                if (file) {
+                    try {
+                        const attachmentResult = await uploadAttachment(file);
+                        messageToSend = `**attachment_id:${attachmentResult.attachment_id}**`;
+                    } catch (error) {
+                         showToast(error.message);
+                         sendButton.disabled = false;
+                         return;
+                    }
+                }
+                
+                if(!messageToSend) {
+                    sendButton.disabled = false;
+                    return;
+                }
+
+                const messageBody = {
+                    action: "add_message", key: API_KEY, chat_id: chatId, sender_user_id: userData.id, sender_name: userData.nome, message: messageToSend
+                };
+
+                try {
+                    const msgResponse = await fetch(API_CHAT_URL, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(messageBody)
+                    });
+                    const msgResult = await msgResponse.json();
+                    if (!msgResult.success) throw new Error(msgResult.message || "Falha ao enviar mensagem.");
+                    await pollForNewMessages();
+                } catch(error) { showToast(error.message); } 
+                finally {
+                    sendButton.disabled = false;
+                    messageInput.value = '';
+                    attachmentInput.value = '';
+                }
+            }
+
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                });
+            }
+
+            async function uploadAttachment(file) {
+                showToast("Enviando anexo...", true);
+                const fileData = await fileToBase64(file);
+                const uploadBody = {
+                    action: "upload_attachment", key: API_KEY, chat_id: chatId, message_id: `msg_${Date.now()}`, file_name: file.name, file_type: file.type, file_data: fileData, uploaded_by: userData.id
+                };
+                 const uploadResponse = await fetch(API_CHAT_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(uploadBody)
+                });
+                const uploadResult = await uploadResponse.json();
+                if (!uploadResult.success) throw new Error(uploadResult.message || "Falha no upload do anexo.");
+                showToast("Anexo enviado!", true);
+                return uploadResult.data;
+            }
+
+            async function fetchAttachmentDetails(attachmentId) {
+                try {
+                    const url = `${API_CHAT_URL}?action=get_attachment&key=${API_KEY}&attachment_id=${attachmentId}`;
+                    const res = await fetch(url);
+                    const result = await res.json();
+                    return result.success ? result.data : null;
+                } catch (e) { return null; }
+            }
+
+            async function fetchProductDetails(productId) {
+                 try {
+                    const url = `${API_PRODUTOS_URL}?action=getByCompany&id_empresa=${userData.empresa_id}`;
+                    const res = await fetch(url);
+                    const result = await res.json();
+                    if (result.success && result.data) {
+                        return result.data.find(p => p.id_produto === productId);
+                    }
+                    return null;
+                } catch (e) { return null; }
+            }
+
+            async function addObservation() {
+                const text = observationsTextarea.value.trim();
+                if (!text) return;
+                addObservationBtn.disabled = true;
+                const body = { action: "add_observation", key: API_KEY, chat_id: chatId, observation: text };
+                 try {
+                     const res = await fetch(API_CHAT_URL, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+                    });
+                    const result = await res.json();
+                    if(result.success) {
+                        showToast("Observação adicionada.", true);
+                        observationsTextarea.value = result.data.observations;
+                    } else throw new Error(result.message);
+                 } catch(e) { showToast(e.message || "Erro ao adicionar observação."); } 
+                 finally { addObservationBtn.disabled = false; }
+            }
+
+            async function updateChatStatus(status) {
+                 const body = { action: "update_status", key: API_KEY, chat_id: chatId, status: status };
+                try {
+                     const res = await fetch(API_CHAT_URL, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+                    });
+                    const result = await res.json();
+                    if(result.success) {
+                        showToast(`Chat ${status}!`, true);
+                        updateChatDetailsUI(result.data);
+                    } else throw new Error(result.message);
+                 } catch(e) { showToast(e.message || `Erro ao atualizar chat.`); }
+            }
+
+            async function pollForNewMessages() {
+                 try {
+                    const url = `${API_CHAT_URL}?action=get_messages&key=${API_KEY}&chat_id=${chatId}&page_size=200`;
+                    const res = await fetch(url);
+                    const result = await res.json();
+                    if(result.success && result.data.messages) {
+                        const raw = result.data.messages;
+                        const all = raw.map(normalizeMessage);
+                        const newMessages = all.filter(msg => new Date(msg.created_at).getTime() > lastMessageTimestamp);
+
+                        if (newMessages.length > 0) {
+                             newMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                             for(const msg of newMessages) await addMessage(msg, true);
+                            lastMessageTimestamp = new Date(newMessages[newMessages.length-1].created_at).getTime();
+                        }
+                    }
+                 } catch(e) { /* silent fail */ }
+            }
+            
+            // --- Product Modal Logic ---
+            async function fetchProducts() {
+                productLoader.classList.remove('hidden');
+                productList.innerHTML = '';
+                 try {
+                    const url = `${API_PRODUTOS_URL}?action=getByCompany&id_empresa=${userData.empresa_id}`;
+                    const res = await fetch(url);
+                    const result = await res.json();
+                    if(result.success && result.data) {
+                        allProducts = result.data;
+                        renderProducts(allProducts);
+                    } else {
+                        productList.innerHTML = `<p class="text-center text-gray-500">Nenhum produto encontrado.</p>`;
+                    }
+                 } catch(e) {
+                     productList.innerHTML = `<p class="text-center text-gray-500">Erro ao carregar produtos.</p>`;
+                 } finally {
+                    productLoader.classList.add('hidden');
+                 }
+            }
+            
+            function renderProducts(products) {
+                 productList.innerHTML = '';
+                 if(products.length === 0) {
+                    productList.innerHTML = `<p class="text-center text-gray-500">Nenhum produto encontrado.</p>`;
+                    return;
+                 }
+                 products.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer';
+                    item.innerHTML = `
+                        <img src="${p.foto1 || 'https://placehold.co/48x48/eee/ccc?text=P'}" class="w-12 h-12 rounded-md object-cover mr-4"/>
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-800 dark:text-gray-200">${p.nome}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">R$ ${parseFloat(p.valor).toFixed(2)}</p>
+                        </div>
+                        <button data-product-id="${p.id_produto}" class="send-product-btn bg-primary-orange text-white px-3 py-1 rounded-md text-sm font-semibold">Enviar</button>
+                    `;
+                    productList.appendChild(item);
+                 });
+            }
+
+            // --- Event Listeners ---
+            sendButton.addEventListener('click', () => {
+                const text = messageInput.value.trim();
+                const file = attachmentInput.files[0];
+                if (text || file) sendMessage(text, file);
+            });
+            messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendButton.click(); });
+            attachmentBtn.addEventListener('click', () => attachmentInput.click());
+            addObservationBtn.addEventListener('click', addObservation);
+            finishChatBtn.addEventListener('click', () => updateChatStatus('fechado'));
+            cancelChatBtn.addEventListener('click', () => updateChatStatus('cancelado'));
+            productBtn.addEventListener('click', async () => {
+                productModal.classList.remove('hidden');
+                if(allProducts.length === 0) await fetchProducts();
+            });
+            closeProductModalBtn.addEventListener('click', () => productModal.classList.add('hidden'));
+            productSearchInput.addEventListener('input', (e) => {
+                 const term = e.target.value.toLowerCase();
+                 const filtered = allProducts.filter(p => p.nome.toLowerCase().includes(term));
+                 renderProducts(filtered);
+            });
+            productList.addEventListener('click', (e) => {
+                if(e.target.classList.contains('send-product-btn')) {
+                    const productId = e.target.dataset.productId;
+                    const message = `**product_id:${productId}**`;
+                    sendMessage(message);
+                    productModal.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('logout-button').addEventListener('click', () => {
+                localStorage.removeItem('nexiUser');
+                window.location.href = 'index.html';
+            });
+
+            // --- Utils ---
+            function showToast(message, isSuccess = false) {
+                toastMessage.textContent = message;
+                toast.className = `fixed bottom-5 right-5 text-white py-2 px-5 rounded-lg shadow-xl transition-all duration-300 z-50 ${isSuccess ? 'bg-green-600' : 'bg-red-600'} opacity-100 translate-y-0`;
+                setTimeout(() => {
+                    toast.className = toast.className.replace('opacity-100 translate-y-0', 'opacity-0 translate-y-10');
+                }, 3000);
+            }
+
+            // --- Initial Load ---
+            async function initialize() {
+                if (!initialChecks()) return;
+
+                await populateSidebar();
+                await fetchAndRenderChat();
+                
+                pollingInterval = setInterval(pollForNewMessages, CHAT_REFRESH_INTERVAL);
+
+                loaderPage.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+            }
+
+            initialize();
+        });
+    </script>
+</body>
+</html>
+

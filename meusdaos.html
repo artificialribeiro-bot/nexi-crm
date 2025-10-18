@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Perfil do Usuário</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        display: ["Poppins", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-lg p-6 sm:p-8 space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+
+        <!-- Header -->
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Seu Perfil</h2>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Aqui estão os seus dados cadastrados.</p>
+        </div>
+
+        <!-- Profile Content -->
+        <div id="user-profile" class="mt-8 space-y-4">
+            <!-- Profile Picture -->
+            <div class="flex justify-center">
+                <img id="profile-pic" class="w-32 h-32 rounded-full object-cover border-4 border-primary-orange"
+                    src="https://placehold.co/128x128/e2e8f0/a0aec0?text=Perfil" alt="Foto do Perfil" 
+                    onerror="this.onerror=null;this.src='https://placehold.co/128x128/e2e8f0/a0aec0?text=Perfil';"/>
+            </div>
+
+            <!-- User Details -->
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <dl class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nome Completo</dt>
+                        <dd id="user-name" class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">
+                            Carregando...</dd>
+                    </div>
+                    <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</dt>
+                        <dd id="user-email" class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">
+                            Carregando...</dd>
+                    </div>
+                    <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Celular</dt>
+                        <dd id="user-celular" class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2">
+                            Carregando...</dd>
+                    </div>
+                    <div class="py-3 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">ID de Usuário</dt>
+                        <dd id="user-id"
+                            class="mt-1 text-sm text-gray-900 dark:text-white sm:mt-0 sm:col-span-2 break-all">
+                            Carregando...</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="pt-6">
+            <button id="logout-btn"
+                class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-md text-white bg-primary-orange hover:bg-primary-orange/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-orange">
+                Sair (Logout)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const profilePic = document.getElementById('profile-pic');
+            const userName = document.getElementById('user-name');
+            const userEmail = document.getElementById('user-email');
+            const userCelular = document.getElementById('user-celular');
+            const userId = document.getElementById('user-id');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            // 1. Get user data from localStorage
+            const userDataString = localStorage.getItem('nexiUser');
+
+            if (!userDataString) {
+                // If no user data, redirect to login page
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const userData = JSON.parse(userDataString);
+
+                // 2. Populate the profile page with user data
+                profilePic.src = userData.foto || 'https://placehold.co/128x128/e2e8f0/a0aec0?text=Perfil';
+                userName.textContent = userData.nome || 'Não informado';
+                userEmail.textContent = userData.email || 'Não informado';
+                userCelular.textContent = userData.celular || 'Não informado';
+                userId.textContent = userData.id || 'Não informado';
+
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                // If data is corrupt, clear it and redirect
+                localStorage.removeItem('nexiUser');
+                window.location.href = 'index.html';
+            }
+
+            // 3. Handle logout
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('nexiUser');
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

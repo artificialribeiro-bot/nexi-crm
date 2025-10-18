@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Selecionar Empresa</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        display: ["Poppins", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .tab-active {
+            border-color: #ff6b35;
+            color: #ff6b35;
+            font-weight: 600;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a2b45;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark flex items-center justify-center min-h-screen p-4">
+
+    <div id="loader-full-page" class="fixed inset-0 bg-white/80 dark:bg-black/80 flex justify-center items-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <div id="content" class="w-full max-w-2xl p-6 sm:p-8 space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hidden">
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Selecione ou Crie uma Empresa</h2>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Para continuar, escolha uma empresa existente ou crie a sua.</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                <button id="tab-select" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-primary-orange hover:border-primary-orange/70 tab-active">
+                    Selecionar Empresa
+                </button>
+                <button id="tab-create" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-primary-orange hover:border-primary-orange/70">
+                    Criar Nova Empresa
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div>
+            <!-- Select Company Panel -->
+            <div id="panel-select">
+                <div class="relative mb-4">
+                    <input type="text" id="search-empresa" placeholder="Buscar empresa pelo nome..." class="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-primary-orange focus:border-primary-orange">
+                    <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                </div>
+                <div id="empresas-list-loader" class="text-center py-4">
+                     <div class="loader mx-auto"></div>
+                     <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Carregando empresas...</p>
+                </div>
+                <ul id="empresas-list" class="max-h-60 overflow-y-auto space-y-2">
+                    <!-- Company items will be injected here -->
+                </ul>
+                 <p id="no-empresas-found" class="text-center py-4 text-gray-500 hidden">Nenhuma empresa encontrada.</p>
+            </div>
+
+            <!-- Create Company Panel -->
+            <div id="panel-create" class="hidden">
+                <form id="create-empresa-form" class="space-y-4">
+                    <div>
+                        <label for="empresa-nome" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa</label>
+                        <input type="text" id="empresa-nome" required class="mt-1 block w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-primary-orange focus:border-primary-orange">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Logo da Empresa (Opcional)</label>
+                        <div class="mt-1 flex items-center space-x-4">
+                            <img id="image-preview" src="https://placehold.co/64x64/e2e8f0/a0aec0?text=Logo" class="h-16 w-16 rounded-full object-cover bg-gray-200">
+                            <label for="empresa-foto-file" class="cursor-pointer bg-white dark:bg-gray-700 py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <span>Selecionar arquivo</span>
+                                <input id="empresa-foto-file" name="empresa-foto-file" type="file" class="sr-only" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-blue hover:bg-primary-blue/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue">
+                        Criar Empresa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-red-600 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300">
+        <p id="toast-message"></p>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_EMPRESAS_URL = 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec';
+            const API_USERS_URL = 'https://script.google.com/macros/s/AKfycbzxJFdRr7kqPAQUllOEN6WjroFGsgqvN25FleCDpHyOxQ3r1n_zBMKFblFNt663CVXj/exec';
+            const API_KEY = '1526';
+            const IMGBB_API_KEY = 'ade4db9dec227671abd61cac5a04b23c';
+            const IMGBB_API_URL = 'https://api.imgbb.com/1/upload';
+
+            const loaderFullPage = document.getElementById('loader-full-page');
+            const content = document.getElementById('content');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            const tabSelect = document.getElementById('tab-select');
+            const tabCreate = document.getElementById('tab-create');
+            const panelSelect = document.getElementById('panel-select');
+            const panelCreate = document.getElementById('panel-create');
+            
+            const createEmpresaForm = document.getElementById('create-empresa-form');
+            const empresaFotoFileInput = document.getElementById('empresa-foto-file');
+            const imagePreview = document.getElementById('image-preview');
+
+            const empresasListContainer = document.getElementById('empresas-list');
+            const listLoader = document.getElementById('empresas-list-loader');
+            const noEmpresasFound = document.getElementById('no-empresas-found');
+            const searchInput = document.getElementById('search-empresa');
+            
+            let allCompanies = [];
+            let userData = null;
+
+            // 1. Initial Check
+            const userDataString = localStorage.getItem('nexiUser');
+            if (!userDataString) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            userData = JSON.parse(userDataString);
+            if (userData.empresa_id) {
+                window.location.href = 'nexi.crm.dashboard.html';
+                return;
+            }
+            
+            loaderFullPage.classList.add('hidden');
+            content.classList.remove('hidden');
+            fetchCompanies();
+
+            // --- Tab Switching Logic ---
+            tabSelect.addEventListener('click', () => {
+                tabSelect.classList.add('tab-active');
+                tabCreate.classList.remove('tab-active');
+                panelSelect.classList.remove('hidden');
+                panelCreate.classList.add('hidden');
+            });
+
+            tabCreate.addEventListener('click', () => {
+                tabCreate.classList.add('tab-active');
+                tabSelect.classList.remove('tab-active');
+                panelCreate.classList.remove('hidden');
+                panelSelect.classList.add('hidden');
+            });
+
+            // --- API Functions ---
+            async function uploadImage(file) {
+                const formData = new FormData();
+                formData.append('key', IMGBB_API_KEY);
+                formData.append('image', file);
+                
+                try {
+                    const response = await fetch(IMGBB_API_URL, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        return result.data.url;
+                    } else {
+                        throw new Error(result.error?.message || 'Falha no upload da imagem.');
+                    }
+                } catch (error) {
+                    showToast(error.message);
+                    return null;
+                }
+            }
+            
+            async function fetchCompanies() {
+                // ... (same as before)
+                listLoader.classList.remove('hidden');
+                empresasListContainer.innerHTML = '';
+                noEmpresasFound.classList.add('hidden');
+                try {
+                    const response = await fetch(`${API_EMPRESAS_URL}?key=${API_KEY}&action=list_empresas`);
+                    const result = await response.json();
+                    if (result.success && result.data.length > 0) {
+                        allCompanies = result.data;
+                        renderCompanies(allCompanies);
+                    } else {
+                        noEmpresasFound.textContent = "Nenhuma empresa cadastrada ainda. Crie a primeira!";
+                        noEmpresasFound.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    showToast('Erro ao carregar empresas.');
+                    noEmpresasFound.textContent = "Falha ao carregar. Tente novamente.";
+                    noEmpresasFound.classList.remove('hidden');
+                } finally {
+                    listLoader.classList.add('hidden');
+                }
+            }
+            
+            async function createAndAssignEmpresa(nome, foto_link) {
+                loaderFullPage.classList.remove('hidden');
+                try {
+                    // Create company
+                    const createUrl = new URL(API_EMPRESAS_URL);
+                    createUrl.searchParams.append('key', API_KEY);
+                    createUrl.searchParams.append('action', 'create_empresa');
+                    createUrl.searchParams.append('nome', nome);
+                    if (foto_link) createUrl.searchParams.append('foto_link', foto_link);
+                    
+                    const responseCreate = await fetch(createUrl);
+                    const resultCreate = await responseCreate.json();
+
+                    if (!resultCreate.success) {
+                        throw new Error(resultCreate.message || 'Erro ao criar empresa.');
+                    }
+                    
+                    const newEmpresaId = resultCreate.data.empresa_id;
+                    // Assign company to user
+                    await updateUserWithCompany(newEmpresaId);
+
+                } catch (error) {
+                    showToast(error.message);
+                    loaderFullPage.classList.add('hidden');
+                }
+            }
+            
+            async function updateUserWithCompany(empresaId) {
+                // ... (same as before)
+                loaderFullPage.classList.remove('hidden');
+                try {
+                    const updateUrl = new URL(API_USERS_URL);
+                    updateUrl.searchParams.append('key', API_KEY);
+                    updateUrl.searchParams.append('action', 'update');
+                    updateUrl.searchParams.append('id', userData.id);
+                    updateUrl.searchParams.append('empresa_id', empresaId);
+
+                    const responseUpdate = await fetch(updateUrl);
+                    const resultUpdate = await responseUpdate.json();
+
+                    if (!resultUpdate.success) {
+                        throw new Error(resultUpdate.message || 'Erro ao vincular empresa ao usuário.');
+                    }
+
+                    const updatedUser = resultUpdate.data;
+                    localStorage.setItem('nexiUser', JSON.stringify(updatedUser));
+                    window.location.href = 'nexi.crm.dashboard.html';
+
+                } catch(error) {
+                    showToast(error.message);
+                    loaderFullPage.classList.add('hidden');
+                }
+            }
+
+
+            // --- Rendering & Event Handlers ---
+            function renderCompanies(companies) {
+                // ... (same as before)
+                empresasListContainer.innerHTML = '';
+                if (companies.length === 0) {
+                    noEmpresasFound.textContent = "Nenhuma empresa encontrada com esse nome.";
+                    noEmpresasFound.classList.remove('hidden');
+                    return;
+                }
+                noEmpresasFound.classList.add('hidden');
+
+                companies.forEach(empresa => {
+                    const li = document.createElement('li');
+                    li.className = 'p-3 flex items-center justify-between border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer';
+                    li.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${empresa.foto_link || 'https://placehold.co/40x40/1a2b45/ffffff?text=' + empresa.nome.charAt(0)}" alt="Logo" class="w-10 h-10 rounded-full mr-4 object-cover">
+                            <span class="font-medium text-gray-800 dark:text-gray-200">${empresa.nome}</span>
+                        </div>
+                        <button class="text-sm text-primary-orange font-semibold hover:underline">Selecionar</button>
+                    `;
+                    li.addEventListener('click', () => updateUserWithCompany(empresa.empresa_id));
+                    empresasListContainer.appendChild(li);
+                });
+            }
+            
+            empresaFotoFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredCompanies = allCompanies.filter(c => c.nome.toLowerCase().includes(searchTerm));
+                renderCompanies(filteredCompanies);
+            });
+            
+            createEmpresaForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nome = document.getElementById('empresa-nome').value;
+                const file = empresaFotoFileInput.files[0];
+                
+                if (!nome) {
+                    showToast('O nome da empresa é obrigatório.');
+                    return;
+                }
+
+                loaderFullPage.classList.remove('hidden');
+                let fotoUrl = null;
+
+                if (file) {
+                    fotoUrl = await uploadImage(file);
+                    if (!fotoUrl) { // If upload failed, stop the process
+                        loaderFullPage.classList.add('hidden');
+                        return; 
+                    }
+                }
+                
+                await createAndAssignEmpresa(nome, fotoUrl);
+            });
+
+            function showToast(message, isSuccess = false) {
+                // ... (same as before)
+                toastMessage.textContent = message;
+                toast.classList.remove('bg-red-600', 'bg-green-600', 'opacity-0', 'translate-y-10');
+                toast.classList.add(isSuccess ? 'bg-green-600' : 'bg-red-600', 'opacity-100', 'translate-y-0');
+
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-10');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+
+</html>
+

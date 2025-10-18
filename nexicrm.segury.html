@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Verificação de Segurança</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        display: ["Poppins", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+        .checkmark-icon {
+            color: #48bb78; /* green-500 */
+            animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .pulsing-icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .check-item {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .check-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md p-6 sm:p-8 space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+
+        <!-- Header -->
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Verificação de Segurança</h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Aguarde, estamos garantindo que seu ambiente esteja seguro.</p>
+
+        <!-- Animated Icon -->
+        <div class="flex justify-center py-4">
+            <span id="status-icon" class="material-icons text-6xl text-primary-blue pulsing-icon">
+                security
+            </span>
+        </div>
+
+        <!-- Checklist -->
+        <div class="text-left pt-4 space-y-3">
+             <div id="check-1" class="check-item flex items-center text-gray-500 dark:text-gray-400">
+                <span class="material-icons text-gray-400 mr-3">sync</span>
+                <span>Verificando sessão de usuário...</span>
+            </div>
+            <div id="check-2" class="check-item flex items-center text-gray-500 dark:text-gray-400">
+                <span class="material-icons text-gray-400 mr-3">sync</span>
+                <span>Analisando conexão segura (HTTPS)...</span>
+            </div>
+             <div id="check-3" class="check-item flex items-center text-gray-500 dark:text-gray-400">
+                <span class="material-icons text-gray-400 mr-3">sync</span>
+                <span>Validando integridade do navegador...</span>
+            </div>
+        </div>
+
+        <!-- Final Status Message -->
+        <div class="pt-6">
+            <p id="final-status" class="font-semibold text-lg text-green-600 dark:text-green-400 opacity-0 transition-opacity duration-500">
+                Tudo certo! Redirecionando...
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // A verificação de login do usuário é a primeira e mais importante etapa.
+            // Se não houver dados do usuário, redireciona imediatamente para a página de login.
+            const userDataString = localStorage.getItem('nexiUser');
+            if (!userDataString) {
+                window.location.href = 'index.html';
+                return; // Impede a execução do resto do script.
+            }
+
+            const checks = [
+                { id: 'check-1', text: 'Sessão de usuário verificada.' },
+                { id: 'check-2', text: 'Conexão segura confirmada.' },
+                { id: 'check-3', text: 'Navegador validado com sucesso.' }
+            ];
+
+            const statusIcon = document.getElementById('status-icon');
+            const finalStatus = document.getElementById('final-status');
+            
+            function runCheck(index) {
+                if (index >= checks.length) {
+                    // Todos os testes foram concluídos
+                    statusIcon.classList.remove('pulsing-icon', 'text-primary-blue');
+                    statusIcon.classList.add('checkmark-icon');
+                    statusIcon.textContent = 'verified_user';
+                    finalStatus.classList.remove('opacity-0');
+
+                    // Redireciona após um curto atraso para o usuário ver a conclusão
+                    setTimeout(() => {
+                        window.location.href = 'empresa.crm.nexi.html';
+                    }, 1200);
+                    return;
+                }
+
+                const checkInfo = checks[index];
+                const checkElement = document.getElementById(checkInfo.id);
+                const iconElement = checkElement.querySelector('.material-icons');
+                const textElement = checkElement.querySelector('span:last-child');
+                
+                // Exibe o item da lista com a animação de entrada
+                setTimeout(() => {
+                    checkElement.classList.add('visible');
+                    
+                    // Simula a duração da verificação
+                    setTimeout(() => {
+                        iconElement.textContent = 'check_circle';
+                        iconElement.classList.add('checkmark-icon');
+                        iconElement.classList.remove('text-gray-400');
+                        textElement.textContent = checkInfo.text;
+                        checkElement.classList.remove('text-gray-500', 'dark:text-gray-400');
+                        checkElement.classList.add('text-gray-800', 'dark:text-gray-200', 'font-medium');
+                        
+                        runCheck(index + 1); // Executa a próxima verificação
+                    }, 600); // 0.6 segundos para "verificar"
+                }, index * 200); // escalona o início de cada verificação
+            }
+
+            // Inicia todo o processo
+            runCheck(0);
+        });
+    </script>
+</body>
+</html>
+

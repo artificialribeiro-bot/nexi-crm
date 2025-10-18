@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Minha Empresa</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f7fafc",
+                        "background-dark": "#1a202c",
+                    },
+                    fontFamily: {
+                        sans: ["Poppins", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a2b45;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        .btn-spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            width: 1.25rem;
+            height: 1.25rem;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark">
+    <div id="loader-full-page" class="fixed inset-0 bg-white/80 dark:bg-black/80 flex justify-center items-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <div id="main-content" class="flex h-screen hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-primary-blue text-white flex flex-col flex-shrink-0">
+             <div class="p-6 text-center">
+                <img alt="Logo Nexi CRM" class="w-32 mx-auto"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXcZvezugXBlNrPDcJy9BIkqhomNN1jporPQHBAuVaGvwMxrapnSVrr2F1iDmio5gShLqepWaFhphp3qUvfhG25cHsqfHxKeFe0JOiIzGsHQJNApOjhklKlOrESpORzdmC9Mij5DqWyP5puflxDu3ju7da60ma2gL_43w3BeBU4LC7IS5wT6uWh3InE9dHdudmRF8txUbI5m9PMvVZeetZ4Ec3Rxr1d8AlK7FaSVyYDZ-ElOg9aZ9B20THvoarH4gpUD26NWK8cac" />
+            </div>
+            <div class="p-6 border-t border-b border-white/10">
+                <div class="flex items-center">
+                    <img id="user-photo" alt="User Photo" class="w-12 h-12 rounded-full object-cover" src="https://placehold.co/48x48/ffffff/1a2b45?text=U" />
+                    <div class="ml-4">
+                        <p id="user-name" class="font-semibold">Carregando...</p>
+                        <p id="company-name-sidebar" class="text-sm text-gray-400">...</p>
+                    </div>
+                </div>
+            </div>
+             <nav class="flex-1 px-4 py-4 space-y-2">
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="nexi.crm.dashboard.html">
+                    <span class="material-icons mr-3">dashboard</span>
+                    Dashboard
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="chats.html">
+                    <span class="material-icons mr-3">chat_bubble_outline</span>
+                    Chats
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="contatos.html">
+                    <span class="material-icons mr-3">contacts</span>
+                    Contatos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="produtos.html">
+                    <span class="material-icons mr-3">inventory_2</span>
+                    Produtos
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="relatorios.html">
+                    <span class="material-icons mr-3">bar_chart</span>
+                    Relatórios
+                </a>
+                 <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10" href="meus-dados.html">
+                    <span class="material-icons mr-3">person_outline</span>
+                    Meus dados
+                </a>
+                <a class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg bg-primary-orange" href="empresa.html">
+                    <span class="material-icons mr-3">business</span>
+                    Empresa
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10">
+                <a id="logout-button" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-white/10 cursor-pointer">
+                    <span class="material-icons mr-3">logout</span>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 sm:p-10 overflow-y-auto">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dados da Empresa</h1>
+
+            <div id="no-company-view" class="max-w-xl mx-auto text-center hidden">
+                <span class="material-icons text-6xl text-gray-400">apartment</span>
+                <h2 class="mt-4 text-2xl font-semibold text-gray-800 dark:text-gray-200">Nenhuma empresa vinculada</h2>
+                <p class="mt-2 text-gray-600 dark:text-gray-400">Sua conta de usuário não está associada a nenhuma empresa. Por favor, entre em contato com o suporte ou crie uma nova empresa se tiver permissão.</p>
+                 <a href="empresa.crm.nexi.html" class="mt-6 inline-block bg-primary-orange text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-primary-orange/90">
+                    Vincular ou Criar Empresa
+                </a>
+            </div>
+
+            <div id="company-view" class="max-w-2xl mx-auto hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <form id="company-form" class="space-y-6">
+                         <div class="flex flex-col items-center space-y-4">
+                            <div class="relative group">
+                                <img id="company-photo-preview" src="https://placehold.co/128x128/eee/ccc?text=Logo" class="w-32 h-32 rounded-full object-cover ring-4 ring-gray-200 dark:ring-gray-700">
+                                <label for="company-photo-input" class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <span class="material-icons">photo_camera</span>
+                                </label>
+                                <input type="file" id="company-photo-input" class="hidden" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="company-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa</label>
+                            <input type="text" id="company-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-orange focus:ring-primary-orange dark:bg-gray-700 dark:border-gray-600">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">ID da Empresa</label>
+                            <p id="company-id" class="mt-1 text-sm text-gray-500 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-900/50 rounded-md"></p>
+                        </div>
+                        
+                         <div class="pt-4 text-right">
+                            <button id="save-company-btn" type="submit" class="bg-primary-blue hover:bg-primary-blue/90 text-white font-bold py-2 px-6 rounded-lg shadow-md flex items-center justify-center w-48 ml-auto">
+                                <span>Salvar Alterações</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-red-600 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-10 transition-all duration-300 z-50">
+        <p id="toast-message"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const API_EMPRESAS_URL = 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec';
+            const IMGBB_API_KEY = 'ade4db9dec227671abd61cac5a04b23c';
+            const API_KEY = '1526';
+            let userData = null;
+            let companyData = null;
+
+            // --- Elements ---
+            const loaderPage = document.getElementById('loader-full-page');
+            const mainContent = document.getElementById('main-content');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const noCompanyView = document.getElementById('no-company-view');
+            const companyView = document.getElementById('company-view');
+            const companyForm = document.getElementById('company-form');
+            const saveBtn = document.getElementById('save-company-btn');
+
+
+            // --- Initial Checks ---
+            if (!initialChecks()) return;
+            
+            // --- UI & Data Functions ---
+            populateSidebar(userData.nome);
+            await loadAndRenderCompanyData();
+            
+            loaderPage.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+
+            function initialChecks() {
+                const userDataString = localStorage.getItem('nexiUser');
+                if (!userDataString) { window.location.href = 'index.html'; return false; }
+                userData = JSON.parse(userDataString);
+                return true;
+            }
+
+            function populateSidebar(userName, companyName = '...') {
+                document.getElementById('user-name').textContent = userName;
+                document.getElementById('company-name-sidebar').textContent = companyName;
+                if (userData.foto) document.getElementById('user-photo').src = userData.foto;
+            }
+
+            async function loadAndRenderCompanyData() {
+                if (!userData.empresa_id) {
+                    companyView.classList.add('hidden');
+                    noCompanyView.classList.remove('hidden');
+                    populateSidebar(userData.nome, 'Sem empresa');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_EMPRESAS_URL}?key=${API_KEY}&action=get_empresa&empresa_id=${userData.empresa_id}`);
+                    const result = await response.json();
+                    if (result.success) {
+                        companyData = result.data;
+                        document.getElementById('company-name').value = companyData.nome;
+                        document.getElementById('company-photo-preview').src = companyData.foto_link || 'https://placehold.co/128x128/eee/ccc?text=Logo';
+                        document.getElementById('company-id').textContent = companyData.empresa_id;
+
+                        populateSidebar(userData.nome, companyData.nome);
+                        companyView.classList.remove('hidden');
+                        noCompanyView.classList.add('hidden');
+
+                    } else {
+                        throw new Error(result.message || 'Empresa não encontrada.');
+                    }
+                } catch (e) {
+                    showToast(`Erro ao carregar dados da empresa: ${e.message}`);
+                    companyView.classList.add('hidden');
+                    noCompanyView.classList.remove('hidden');
+                }
+            }
+            
+            async function uploadImage(file) {
+                if (!file) return null;
+                const base64String = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
+                });
+
+                const formData = new FormData();
+                formData.append('image', base64String);
+
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    return result.data.url;
+                } else {
+                    throw new Error(result.error?.message || 'Falha no upload da imagem.');
+                }
+            }
+
+            // --- Form Handler ---
+            async function handleCompanyUpdate(event) {
+                event.preventDefault();
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<div class="btn-spinner"></div>`;
+
+                try {
+                    const file = document.getElementById('company-photo-input').files[0];
+                    const newPhotoUrl = await uploadImage(file);
+                    
+                    const newName = document.getElementById('company-name').value;
+                    
+                    if (!newName && !newPhotoUrl) {
+                        showToast("Nenhuma alteração para salvar.");
+                        return;
+                    }
+
+                    const params = new URLSearchParams({
+                        action: 'update_empresa', key: API_KEY, empresa_id: companyData.empresa_id,
+                    });
+                    if (newName !== companyData.nome) params.append('nome', newName);
+                    if (newPhotoUrl) params.append('foto_link', newPhotoUrl);
+
+
+                    const response = await fetch(`${API_EMPRESAS_URL}?${params.toString()}`);
+                    const result = await response.json();
+
+                    if(result.success) {
+                        showToast('Empresa atualizada com sucesso!', true);
+                        await loadAndRenderCompanyData(); // Reload data to show changes
+                    } else {
+                        showToast(result.message || 'Erro ao atualizar a empresa.');
+                    }
+                } catch (error) {
+                    showToast(`Erro: ${error.message}`);
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = `<span>Salvar Alterações</span>`;
+                }
+            }
+
+
+            // --- Event Listeners ---
+            companyForm.addEventListener('submit', handleCompanyUpdate);
+            document.getElementById('company-photo-input').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('company-photo-preview').src = e.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            document.getElementById('logout-button').addEventListener('click', () => {
+                localStorage.removeItem('nexiUser');
+                window.location.href = 'index.html';
+            });
+            
+            // --- Utils ---
+            function showToast(message, isSuccess = false) {
+                toastMessage.textContent = message;
+                toast.classList.remove('bg-red-600', 'bg-green-600', 'opacity-0', 'translate-y-10');
+                toast.classList.add(isSuccess ? 'bg-green-600' : 'bg-red-600', 'opacity-100', 'translate-y-0');
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-10');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
