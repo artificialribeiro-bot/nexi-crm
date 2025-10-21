@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Nexi CRM - Suporte ao Cliente</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            'blue': '#1a2b45',
+                            'orange': '#ff6b35'
+                        },
+                        "background-light": "#f0f2f5",
+                        "background-dark": "#111b21",
+                        "chat-bubble-sent": "#d9fdd3",
+                        "chat-bubble-sent-dark": "#005c4b",
+                        "chat-bubble-received": "#ffffff",
+                        "chat-bubble-received-dark": "#202c33",
+                    },
+                    fontFamily: {
+                        sans: ["Poppins", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a2b45;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            float: left;
+            margin: 0 1px;
+            background-color: #9E9E9E;
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: bob 1s infinite;
+        }
+        .typing-indicator span:nth-of-type(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-of-type(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-of-type(3) { animation-delay: 0.4s; }
+        @keyframes bob {
+            10% { transform: translateY(0); background-color: #9E9E9E; }
+            50% { transform: translateY(-5px); background-color: #BDBDBD; }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark antialiased">
+    <!-- Full Page Loader -->
+    <div id="loader-full-page" class="fixed inset-0 bg-white/80 dark:bg-black/80 flex justify-center items-center z-50">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-content" class="h-screen w-screen flex flex-col hidden">
+    
+        <!-- Company Selection Modal -->
+        <div id="company-selection-modal" class="absolute inset-0 bg-gray-900/80 flex items-center justify-center p-4 z-40 fade-in">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md slide-up">
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Bem-vindo ao Suporte</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Para qual empresa você precisa de ajuda?</p>
+                    <div class="relative mt-4">
+                        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                        <input type="text" id="company-search-input" placeholder="Pesquisar empresa..."
+                            class="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary-orange focus:border-primary-orange">
+                    </div>
+                </div>
+                <div id="company-list" class="max-h-60 overflow-y-auto border-t dark:border-gray-700">
+                    <!-- Company list will be populated here -->
+                </div>
+                <div id="company-loader" class="text-center py-10 hidden">
+                    <div class="loader mx-auto"></div>
+                </div>
+                <!-- Resume Chat Section -->
+                <div class="p-6 border-t dark:border-gray-700">
+                    <p class="text-sm text-center text-gray-600 dark:text-gray-400">Já tem um atendimento?</p>
+                    <div class="mt-3 flex items-center space-x-2">
+                        <input type="text" id="resume-chat-input" placeholder="Insira o ID do seu chat" class="flex-1 w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary-orange focus:border-primary-orange min-w-0">
+                        <button id="resume-chat-button" class="bg-primary-blue text-white rounded-md px-4 py-2 flex-shrink-0 hover:bg-primary-blue/90 flex items-center justify-center w-24 h-10 transition-colors">
+                            <span>Entrar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div id="chat-ui" class="flex flex-col h-full w-full hidden">
+            <!-- Chat Header -->
+            <header class="bg-primary-blue text-white p-3 flex items-center shadow-md flex-shrink-0">
+                <img id="company-logo" src="https://placehold.co/40x40/ffffff/1a2b45?text=N" alt="Logo da Empresa" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                
+                <div class="ml-3 min-w-0 flex-1">
+                    <!-- Attendant Info (shown when connected) -->
+                    <div id="attendant-info" class="flex items-center hidden">
+                        <img id="attendant-photo" src="https://placehold.co/40x40/ffffff/1a2b45?text=A" alt="Foto do Atendente" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                        <div class="ml-3 min-w-0">
+                            <h2 id="attendant-name" class="font-semibold text-sm truncate">Nome do Atendente</h2>
+                            <p id="chat-status-attendant" class="text-xs text-gray-300">Online</p>
+                        </div>
+                    </div>
+
+                    <!-- Company Info (shown before connection) -->
+                    <div id="company-info">
+                        <h2 id="company-chat-name" class="font-semibold text-lg truncate">Nome da Empresa</h2>
+                        <p id="chat-status-company" class="text-xs text-gray-300">Aguardando atendimento...</p>
+                    </div>
+                </div>
+
+                <!-- Header Actions -->
+                <button id="close-chat-button" class="text-white hover:bg-white/20 p-2 rounded-full transition-colors ml-2">
+                    <span class="material-icons">close</span>
+                </button>
+            </header>
+
+            <!-- Messages Area -->
+            <main id="messages-container" class="flex-1 p-4 overflow-y-auto bg-background-light dark:bg-background-dark space-y-4">
+                <!-- Messages will be injected here -->
+            </main>
+
+            <!-- Message Input -->
+            <footer class="bg-white dark:bg-chat-bubble-received-dark p-2 sm:p-3 flex items-center flex-shrink-0 space-x-2 sm:space-x-3 border-t dark:border-gray-700">
+                <button id="attach-file-button" disabled class="text-gray-500 hover:text-primary-orange disabled:opacity-50 p-2 rounded-full transition-colors">
+                    <span class="material-icons">attach_file</span>
+                </button>
+                <input type="file" id="file-input" class="hidden"/>
+                <input type="text" id="message-input" placeholder="Digite sua mensagem..." disabled class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full px-4 py-2 border dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-orange disabled:opacity-50 min-w-0 transition-all">
+                <button id="send-button" disabled class="bg-primary-orange text-white rounded-full p-3 flex items-center justify-center disabled:bg-opacity-50 flex-shrink-0 hover:bg-orange-600 transition-colors">
+                    <span class="material-icons">send</span>
+                </button>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+    /**
+     * Company Identification and Redirection Flow
+     */
+    class CompanyIdentificationFlow {
+        constructor(apiConfig) {
+            this.apiConfig = apiConfig;
+            this.selectedCompany = null;
+        }
+
+        getCompanyIdFromMultipleSources() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idFromUrl = urlParams.get('id_empresa');
+            if (idFromUrl) {
+                console.log(`[CompanyIdentification] ID de empresa encontrado na URL: ${idFromUrl}`);
+                return idFromUrl;
+            }
+
+            const idFromLocalStorage = localStorage.getItem('id_empresa');
+            if (idFromLocalStorage) {
+                console.log(`[CompanyIdentification] ID de empresa encontrado em localStorage: ${idFromLocalStorage}`);
+                return idFromLocalStorage;
+            }
+
+            const idFromSessionStorage = sessionStorage.getItem('id_empresa');
+            if (idFromSessionStorage) {
+                console.log(`[CompanyIdentification] ID de empresa encontrado em sessionStorage: ${idFromSessionStorage}`);
+                return idFromSessionStorage;
+            }
+
+            return null;
+        }
+
+        async validateAndLoadCompanyDetails(companyId) {
+            try {
+                console.log(`[CompanyIdentification] Validando empresa com ID: ${companyId}`);
+                const url = `${this.apiConfig.API_EMPRESA_URL}?action=getById&id_empresa=${companyId}&key=${this.apiConfig.API_KEY}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    console.log(`[CompanyIdentification] Empresa validada:`, result.data);
+                    this.selectedCompany = result.data;
+                    return result.data;
+                }
+                return null;
+            } catch (error) {
+                console.error(`[CompanyIdentification] Erro ao validar empresa:`, error);
+                return null;
+            }
+        }
+
+        saveCompanyIdToStorage(companyId) {
+            try {
+                localStorage.setItem('id_empresa', companyId);
+                console.log(`[CompanyIdentification] ID de empresa salvo em localStorage`);
+            } catch (error) {
+                console.warn(`[CompanyIdentification] Erro ao salvar ID:`, error);
+            }
+        }
+
+        clearCompanyIdFromStorage() {
+            localStorage.removeItem('id_empresa');
+            sessionStorage.removeItem('id_empresa');
+        }
+
+        async initializeFlow(callbacks = {}) {
+            const { onCompanyFound = () => {}, onCompanyNotFound = () => {}, onError = () => {} } = callbacks;
+
+            try {
+                const companyId = this.getCompanyIdFromMultipleSources();
+                if (companyId) {
+                    const companyData = await this.validateAndLoadCompanyDetails(companyId);
+                    if (companyData) {
+                        this.saveCompanyIdToStorage(companyId);
+                        onCompanyFound(companyData);
+                        return companyData;
+                    }
+                    this.clearCompanyIdFromStorage();
+                }
+                onCompanyNotFound();
+                return null;
+            } catch (error) {
+                console.error('[CompanyIdentification] Erro:', error);
+                onError(error);
+                return null;
+            }
+        }
+
+        selectCompany(companyData) {
+            if (!companyData || !companyData.empresa_id) return false;
+            this.selectedCompany = companyData;
+            this.saveCompanyIdToStorage(companyData.empresa_id);
+            return true;
+        }
+
+        getSelectedCompanyId() {
+            if (this.selectedCompany && this.selectedCompany.empresa_id) {
+                return this.selectedCompany.empresa_id;
+            }
+            return this.getCompanyIdFromMultipleSources();
+        }
+
+        getSelectedCompanyData() {
+            return this.selectedCompany;
+        }
+    }
+
+    /**
+     * Chat Resumption Flow
+     */
+    class ChatResumptionFlow {
+        constructor(apiConfig) {
+            this.apiConfig = apiConfig;
+        }
+
+        getChatIdFromStorage() {
+            const chatIdFromLocalStorage = localStorage.getItem('chat_id');
+            if (chatIdFromLocalStorage) {
+                console.log(`[ChatResumption] ID de chat encontrado em localStorage`);
+                return chatIdFromLocalStorage;
+            }
+            return null;
+        }
+
+        async resumeChat(chatId) {
+            try {
+                console.log(`[ChatResumption] Tentando retomar chat: ${chatId}`);
+                const url = `${this.apiConfig.API_CHAT_URL}?action=get_chat&key=${this.apiConfig.API_KEY}&chat_id=${chatId}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    console.log(`[ChatResumption] Chat retomado com sucesso`);
+                    this.saveChatIdToStorage(chatId);
+                    return result.data;
+                }
+                return null;
+            } catch (error) {
+                console.error(`[ChatResumption] Erro ao retomar chat:`, error);
+                return null;
+            }
+        }
+
+        saveChatIdToStorage(chatId) {
+            try {
+                localStorage.setItem('chat_id', chatId);
+                sessionStorage.setItem('chat_id', chatId);
+            } catch (error) {
+                console.warn(`[ChatResumption] Erro ao salvar ID de chat:`, error);
+            }
+        }
+
+        clearChatIdFromStorage() {
+            localStorage.removeItem('chat_id');
+            sessionStorage.removeItem('chat_id');
+        }
+    }
+
+    /**
+     * Main Plugin Application
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- APIs ---
+        const API_EMPRESA_URL = 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec';
+        const API_CLIENTES_URL = 'https://script.google.com/macros/s/AKfycbwe2m8h2OP0bFpkItF4x5OYRT77Bkhkdvg-EEBEzT_fq59Yz6J8ulcX3iPq9KOjpfcwVg/exec';
+        const API_CHAT_URL = 'https://astounding-donut-e0ea90.netlify.app/.netlify/functions/proxy';
+        const API_USER_URL = 'https://script.google.com/macros/s/AKfycbzxJFdRr7kqPAQUllOEN6WjroFGsgqvN25FleCDpHyOxQ3r1n_zBMKFblFNt663CVXj/exec';
+        const API_PRODUTOS_URL = 'https://script.google.com/macros/s/AKfycbyEFH261J3qybQfBslMZiFQyJh1dJnFtsgswekugKYgkrsV6bxXcMvFu_YGw5K-fS4zLQ/exec';
+        const API_KEY = '1526';
+
+        const apiConfig = { API_EMPRESA_URL, API_CLIENTES_URL, API_CHAT_URL, API_USER_URL, API_PRODUTOS_URL, API_KEY };
+
+        // --- State ---
+        let selectedCompany = null;
+        let allCompanies = [];
+        let chatState = {
+            chatId: null,
+            customerData: { id_usuario: 'anon_' + Date.now() },
+            currentStep: 'ask_client_name',
+            attendantJoined: false,
+            pollingInterval: null,
+            lastMessageTimestamp: 0,
+        };
+
+        // --- Flow Managers ---
+        const companyFlow = new CompanyIdentificationFlow(apiConfig);
+        const chatFlow = new ChatResumptionFlow(apiConfig);
+        
+        // --- Elements ---
+        const loaderPage = document.getElementById('loader-full-page');
+        const mainContent = document.getElementById('main-content');
+        const companyModal = document.getElementById('company-selection-modal');
+        const companyList = document.getElementById('company-list');
+        const companyLoader = document.getElementById('company-loader');
+        const companySearchInput = document.getElementById('company-search-input');
+        const chatUI = document.getElementById('chat-ui');
+        const messagesContainer = document.getElementById('messages-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const resumeChatInput = document.getElementById('resume-chat-input');
+        const resumeChatButton = document.getElementById('resume-chat-button');
+        const attachFileButton = document.getElementById('attach-file-button');
+        const fileInput = document.getElementById('file-input');
+        const closeButton = document.getElementById('close-chat-button');
+
+        // --- UI Helpers ---
+        function addMessage(text, sender = 'bot', name = 'NexiBot', isHtml = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} slide-up`;
+            
+            let bubbleColor;
+            if (sender === 'user') {
+                bubbleColor = 'bg-chat-bubble-sent dark:bg-chat-bubble-sent-dark text-black dark:text-white';
+            } else if (sender === 'attendant') {
+                bubbleColor = 'bg-chat-bubble-received dark:bg-chat-bubble-received-dark text-black dark:text-white';
+            } else {
+                bubbleColor = 'bg-gray-300 dark:bg-gray-700 text-black dark:text-white';
+            }
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = `max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${bubbleColor}`;
+            
+            if (isHtml) {
+                contentDiv.innerHTML = text;
+            } else {
+                contentDiv.textContent = text;
+            }
+
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex justify-start';
+            messageDiv.id = 'typing-indicator';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'bg-gray-300 dark:bg-gray-700 px-4 py-2 rounded-lg';
+            contentDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) typingIndicator.remove();
+        }
+
+        function enableInput() {
+            if (chatState.currentStep !== 'done') {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                attachFileButton.disabled = !chatState.chatId;
+                messageInput.focus();
+            }
+        }
+
+        function disableInput() {
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            attachFileButton.disabled = true;
+        }
+
+        // --- Company Management ---
+        async function fetchCompanies() {
+            try {
+                companyLoader.classList.remove('hidden');
+                const url = `${API_EMPRESA_URL}?action=getAll&key=${API_KEY}`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success && Array.isArray(result.data)) {
+                    allCompanies = result.data;
+                    renderCompanies(allCompanies);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar empresas:', error);
+            } finally {
+                companyLoader.classList.add('hidden');
+            }
+        }
+
+        function renderCompanies(companies) {
+            companyList.innerHTML = '';
+            companies.forEach(company => {
+                const div = document.createElement('div');
+                div.className = 'p-4 border-b dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors';
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="${company.logo || 'https://placehold.co/40x40/ffffff/1a2b45?text=C'}" alt="${company.nome}" class="w-10 h-10 rounded-full object-cover mr-3">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-semibold text-gray-900 dark:text-white truncate">${company.nome}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 truncate">${company.email || 'Sem email'}</p>
+                        </div>
+                    </div>
+                `;
+                div.addEventListener('click', () => selectCompanyAndStartChat(company));
+                companyList.appendChild(div);
+            });
+        }
+
+        async function selectCompanyAndStartChat(company) {
+            if (!companyFlow.selectCompany(company)) return;
+            
+            selectedCompany = company;
+            companyModal.classList.add('hidden');
+            chatUI.classList.remove('hidden');
+            
+            document.getElementById('company-logo').src = company.logo || 'https://placehold.co/40x40/ffffff/1a2b45?text=C';
+            document.getElementById('company-chat-name').textContent = company.nome;
+            messagesContainer.innerHTML = '';
+
+            // Iniciar novo chat
+            await startNewChat(company);
+        }
+
+        async function startNewChat(company) {
+            try {
+                disableInput();
+                addMessage('Iniciando atendimento...', 'bot', 'Sistema');
+                
+                const body = {
+                    action: 'create_chat',
+                    key: API_KEY,
+                    empresa_id: company.empresa_id,
+                    title: `Suporte para ${company.nome}`,
+                    creator_user_id: chatState.customerData.id_usuario,
+                    creator_email: chatState.customerData.email || 'cliente@email.com'
+                };
+
+                const response = await fetch(API_CHAT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await response.json();
+                if (result.success && result.data.chat_id) {
+                    chatState.chatId = result.data.chat_id;
+                    chatFlow.saveChatIdToStorage(chatState.chatId);
+                    
+                    messagesContainer.innerHTML = '';
+                    addMessage('Bem-vindo! Como posso ajudá-lo?', 'bot', 'NexiBot');
+                    enableInput();
+                    startPolling();
+                } else {
+                    addMessage('Erro ao iniciar chat. Tente novamente.', 'bot', 'Sistema');
+                }
+            } catch (error) {
+                console.error('Erro ao iniciar chat:', error);
+                addMessage('Erro ao iniciar chat. Verifique sua conexão.', 'bot', 'Sistema');
+            }
+        }
+
+        async function handleResumeChat() {
+            const chatIdToResume = resumeChatInput.value.trim();
+            if (!chatIdToResume) return;
+
+            resumeChatButton.disabled = true;
+            resumeChatButton.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>`;
+
+            try {
+                const chatUrl = `${API_CHAT_URL}?action=get_chat&key=${API_KEY}&chat_id=${chatIdToResume}`;
+                const chatResponse = await fetch(chatUrl);
+                const chatResult = await chatResponse.json();
+                
+                if (!chatResult.success) throw new Error(chatResult.message || "Chat não encontrado.");
+                
+                const chatData = chatResult.data;
+                chatState.chatId = chatData.chat_id;
+                chatState.customerData.id_usuario = chatData.creator_user_id;
+                chatState.customerData.email = chatData.creator_email;
+                chatState.customerData.nome = chatData.title.replace('Suporte para ', '');
+
+                const messagesUrl = `${API_CHAT_URL}?action=get_messages&key=${API_KEY}&chat_id=${chatIdToResume}&page_size=200`;
+                const messagesResponse = await fetch(messagesUrl);
+                const messagesResult = await messagesResponse.json();
+
+                companyModal.classList.add('hidden');
+                chatUI.classList.remove('hidden');
+                
+                document.getElementById('company-logo').src = 'https://placehold.co/40x40/ffffff/1a2b45?text=N';
+                document.getElementById('company-chat-name').textContent = chatData.title;
+
+                messagesContainer.innerHTML = '';
+                if (messagesResult.success && messagesResult.data.messages) {
+                    const messages = messagesResult.data.messages.sort((a,b) => new Date(a.created_at || '') - new Date(b.created_at || ''));
+                    for(const msg of messages) {
+                        await normalizeAndDisplayMessage(msg);
+                    }
+                    if(messages.length > 0) {
+                        chatState.lastMessageTimestamp = new Date(messages[messages.length - 1].created_at || '').getTime();
+                    }
+                }
+                
+                chatState.currentStep = 'awaiting_attendant';
+                enableInput();
+                startPolling();
+
+            } catch (error) {
+                resumeChatInput.value = '';
+                resumeChatInput.placeholder = error.message;
+                setTimeout(() => { resumeChatInput.placeholder = 'Insira o ID do seu chat'; }, 3000);
+            } finally {
+                resumeChatButton.disabled = false;
+                resumeChatButton.innerHTML = `<span>Entrar</span>`;
+            }
+        }
+
+        async function normalizeAndDisplayMessage(msg, isNew = false) {
+            const sender = msg.sender_type === 'attendant' ? 'attendant' : (msg.sender_type === 'user' ? 'user' : 'bot');
+            const name = msg.sender_name || (sender === 'attendant' ? 'Atendente' : 'Cliente');
+            
+            addMessage(msg.message, sender, name);
+            
+            if (isNew) {
+                chatState.lastMessageTimestamp = new Date(msg.created_at || '').getTime();
+            }
+        }
+
+        async function handleUserInput(text) {
+            disableInput();
+            addMessage(text, 'user', chatState.customerData.nome || 'Você');
+            
+            await sendUserMessageToChat(text);
+            enableInput();
+        }
+
+        async function sendUserMessageToChat(message) {
+            const body = {
+                action: 'add_message',
+                key: API_KEY,
+                chat_id: chatState.chatId,
+                sender_user_id: chatState.customerData.id_usuario,
+                sender_name: chatState.customerData.nome || 'Cliente',
+                message: message
+            };
+            
+            try {
+                await fetch(API_CHAT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+            } catch(error) {
+                addMessage("Não foi possível enviar sua mensagem. Verifique sua conexão.", 'bot', 'Sistema');
+            }
+        }
+
+        async function fetchAttendantDetails(attendantId) {
+            try {
+                const url = `${API_USER_URL}?action=get&key=${API_KEY}&id=${attendantId}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                if(result.success) return result.data;
+            } catch(e) { }
+            return null;
+        }
+
+        function startPolling() {
+            if (chatState.pollingInterval) clearInterval(chatState.pollingInterval);
+            
+            chatState.pollingInterval = setInterval(async () => {
+                try {
+                    const chatUrl = `${API_CHAT_URL}?action=get_chat&key=${API_KEY}&chat_id=${chatState.chatId}`;
+                    const chatResponse = await fetch(chatUrl);
+                    if (!chatResponse.ok) return;
+                    const chatResult = await chatResponse.json();
+
+                    if(chatResult.success) {
+                        const chatData = chatResult.data;
+                        if(chatData.attendant_user_id && !chatState.attendantJoined) {
+                            chatState.attendantJoined = true;
+                            const attendantDetails = await fetchAttendantDetails(chatData.attendant_user_id);
+                            const attendantName = attendantDetails ? attendantDetails.nome : (chatData.attendant_email || 'Atendente');
+                            
+                            document.getElementById('company-info').classList.add('hidden');
+                            const attendantInfo = document.getElementById('attendant-info');
+                            if(attendantDetails && attendantDetails.foto) {
+                                document.getElementById('attendant-photo').src = attendantDetails.foto;
+                            }
+                            document.getElementById('attendant-name').textContent = attendantName;
+                            attendantInfo.classList.remove('hidden');
+
+                            addMessage(`Olá! Meu nome é ${attendantName} e vou te ajudar.`, 'attendant', attendantName);
+                        }
+
+                        const status = chatData.status;
+                        if (status === 'fechado' || status === 'cancelado') {
+                            clearInterval(chatState.pollingInterval);
+                            addMessage("Este atendimento foi finalizado e não pode mais receber novas mensagens.", 'bot', 'Sistema');
+                            disableInput();
+                            return;
+                        }
+                    }
+
+                    const messagesUrl = `${API_CHAT_URL}?action=get_messages&key=${API_KEY}&chat_id=${chatState.chatId}&page_size=50`;
+                    const messagesResponse = await fetch(messagesUrl);
+                    if(!messagesResponse.ok) return;
+                    const messagesResult = await messagesResponse.json();
+
+                    if(messagesResult.success && messagesResult.data && messagesResult.data.messages) {
+                        const newMessages = messagesResult.data.messages.filter(msg => new Date(msg.created_at || '').getTime() > chatState.lastMessageTimestamp);
+                        if (newMessages.length > 0) {
+                            newMessages.sort((a,b) => new Date(a.created_at || '') - new Date(b.created_at || ''));
+                            for(const msg of newMessages) {
+                                await normalizeAndDisplayMessage(msg, true);
+                            }
+                        }
+                    }
+                } catch(error) { }
+            }, 5000);
+        }
+
+        // --- Event Listeners ---
+        companySearchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allCompanies.filter(c => c.nome.toLowerCase().includes(term));
+            renderCompanies(filtered);
+        });
+        
+        resumeChatButton.addEventListener('click', handleResumeChat);
+
+        sendButton.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (text) {
+                handleUserInput(text);
+                messageInput.value = '';
+            }
+        });
+        
+        messageInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && !sendButton.disabled) {
+                sendButton.click();
+            }
+        });
+
+        closeButton.addEventListener('click', () => {
+            if (chatState.pollingInterval) clearInterval(chatState.pollingInterval);
+            chatUI.classList.add('hidden');
+            companyModal.classList.remove('hidden');
+            chatState = {
+                chatId: null,
+                customerData: { id_usuario: 'anon_' + Date.now() },
+                currentStep: 'ask_client_name',
+                attendantJoined: false,
+                pollingInterval: null,
+                lastMessageTimestamp: 0,
+            };
+        });
+
+        // --- Initialization ---
+        async function initialize() {
+            try {
+                // Tentar carregar empresa pré-existente
+                const companyData = await companyFlow.initializeFlow({
+                    onCompanyFound: (company) => {
+                        console.log('[Plugin] Empresa encontrada, exibindo chat UI');
+                        selectedCompany = company;
+                        companyModal.classList.add('hidden');
+                        chatUI.classList.remove('hidden');
+                        document.getElementById('company-logo').src = company.logo || 'https://placehold.co/40x40/ffffff/1a2b45?text=C';
+                        document.getElementById('company-chat-name').textContent = company.nome;
+                        messagesContainer.innerHTML = '';
+                        addMessage('Bem-vindo! Como posso ajudá-lo?', 'bot', 'NexiBot');
+                        enableInput();
+                        startPolling();
+                    },
+                    onCompanyNotFound: () => {
+                        console.log('[Plugin] Empresa não encontrada, exibindo modal de seleção');
+                        companyModal.classList.remove('hidden');
+                        fetchCompanies();
+                    },
+                    onError: (error) => {
+                        console.error('[Plugin] Erro na inicialização:', error);
+                    }
+                });
+            } catch (error) {
+                console.error('[Plugin] Erro crítico:', error);
+                companyModal.innerHTML = `<div class="p-6 text-center"><h3 class="text-xl font-bold text-gray-900 dark:text-white">Erro de Conexão</h3><p class="text-gray-600 dark:text-gray-400 mt-2">Não foi possível carregar o plugin. Verifique sua conexão e recarregue a página.</p></div>`;
+            } finally {
+                loaderPage.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+            }
+        }
+
+        initialize();
+    });
+    </script>
+
+</body>
+</html>
+
