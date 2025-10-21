@@ -1,26 +1,14 @@
-/**
- * Nexi Chat Widget v1.0
- * Widget de chat para suporte ao cliente
- * 
- * COMO USAR:
- * 1. Adicione este script no seu site:
- *    <script src="caminho/para/nexi-chat-widget.js"></script>
- * 
- * 2. Inicialize o widget:
- *    <script>
- *      NexiChat.init({
- *        empresaId: 'SEU_ID_EMPRESA_AQUI',
- *        position: 'right', // 'right' ou 'left'
- *        primaryColor: '#1a2b45',
- *        accentColor: '#ff6b35'
- *      });
- *    </script>
- */
+
 
 (function() {
     'use strict';
 
-    // Variáveis globais do widget
+    // Prevenir múltiplas inicializações
+    if (window.NexiChat) {
+        console.warn('Nexi Chat: Widget já inicializado');
+        return;
+    }
+
     const NexiChat = {
         config: {
             empresaId: null,
@@ -30,6 +18,7 @@
         },
         state: {
             isOpen: false,
+            isInitialized: false,
             chatId: null,
             customerData: { id_usuario: 'anon_' + Date.now() },
             currentStep: 'ask_client_name',
@@ -39,7 +28,6 @@
             companyData: null
         },
         
-        // APIs
         API: {
             EMPRESA: 'https://script.google.com/macros/s/AKfycbw0HyUQPS_67MmotBUNj3GI-LjweHrc6ALchR7rJt8eSPwGHitxeh5U9LIDQRtXybcZ/exec',
             CLIENTES: 'https://script.google.com/macros/s/AKfycbwe2m8h2OP0bFpkItF4x5OYRT77Bkhkdvg-EEBEzT_fq59Yz6J8ulcX3iPq9KOjpfcwVg/exec',
@@ -49,24 +37,39 @@
             KEY: '1526'
         },
 
-        // Inicialização
         init: function(options) {
-            if (!options.empresaId) {
+            if (this.state.isInitialized) {
+                console.warn('Nexi Chat: Widget já foi inicializado');
+                return;
+            }
+
+            if (!options || !options.empresaId) {
                 console.error('Nexi Chat: empresaId é obrigatório');
                 return;
             }
             
             this.config = { ...this.config, ...options };
+            this.state.isInitialized = true;
+            
+            // Aguardar DOM estar pronto
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.setup());
+            } else {
+                this.setup();
+            }
+        },
+
+        setup: function() {
             this.injectStyles();
             this.createWidget();
             this.loadCompanyData();
         },
 
-        // Injetar estilos CSS
         injectStyles: function() {
             const styles = `
-                /* Nexi Chat Widget Styles */
-                #nexi-chat-widget * {
+                #nexi-chat-widget *,
+                #nexi-chat-widget *::before,
+                #nexi-chat-widget *::after {
                     box-sizing: border-box;
                     margin: 0;
                     padding: 0;
@@ -90,6 +93,7 @@
                     z-index: 999998;
                     transition: transform 0.3s, box-shadow 0.3s;
                     font-size: 28px;
+                    line-height: 1;
                 }
                 
                 #nexi-chat-button:hover {
@@ -135,7 +139,6 @@
                     }
                 }
                 
-                /* Header */
                 #nexi-chat-header {
                     background: ${this.config.primaryColor};
                     color: white;
@@ -151,6 +154,7 @@
                     border-radius: 50%;
                     object-fit: cover;
                     margin-right: 12px;
+                    flex-shrink: 0;
                 }
                 
                 #nexi-chat-header-info {
@@ -183,13 +187,13 @@
                     line-height: 1;
                     opacity: 0.8;
                     transition: opacity 0.2s;
+                    flex-shrink: 0;
                 }
                 
                 #nexi-chat-close:hover {
                     opacity: 1;
                 }
                 
-                /* Messages Area */
                 #nexi-chat-messages {
                     flex: 1;
                     overflow-y: auto;
@@ -237,7 +241,6 @@
                     margin-bottom: 4px;
                 }
                 
-                /* Typing Indicator */
                 .nexi-typing-indicator {
                     display: flex;
                     align-items: center;
@@ -270,7 +273,6 @@
                     }
                 }
                 
-                /* Input Area */
                 #nexi-chat-input-area {
                     padding: 12px;
                     background: white;
@@ -288,6 +290,8 @@
                     padding: 8px;
                     font-size: 20px;
                     transition: color 0.2s;
+                    line-height: 1;
+                    flex-shrink: 0;
                 }
                 
                 #nexi-chat-attach-btn:hover:not(:disabled) {
@@ -308,6 +312,7 @@
                     font-family: inherit;
                     outline: none;
                     transition: border-color 0.2s;
+                    min-width: 0;
                 }
                 
                 #nexi-chat-input:focus {
@@ -332,6 +337,7 @@
                     justify-content: center;
                     font-size: 20px;
                     transition: opacity 0.2s;
+                    flex-shrink: 0;
                 }
                 
                 #nexi-chat-send-btn:hover:not(:disabled) {
@@ -343,7 +349,6 @@
                     cursor: not-allowed;
                 }
                 
-                /* Resume Chat Section */
                 #nexi-resume-section {
                     padding: 16px;
                     border-top: 1px solid #e0e0e0;
@@ -370,6 +375,7 @@
                     font-size: 13px;
                     font-family: inherit;
                     outline: none;
+                    min-width: 0;
                 }
                 
                 #nexi-resume-chat-input:focus {
@@ -387,9 +393,10 @@
                     cursor: pointer;
                     transition: opacity 0.2s;
                     white-space: nowrap;
+                    flex-shrink: 0;
                 }
                 
-                #nexi-resume-chat-btn:hover {
+                #nexi-resume-chat-btn:hover:not(:disabled) {
                     opacity: 0.9;
                 }
                 
@@ -398,7 +405,6 @@
                     cursor: not-allowed;
                 }
                 
-                /* Loading */
                 .nexi-loading {
                     display: inline-block;
                     width: 16px;
@@ -414,7 +420,6 @@
                     100% { transform: rotate(360deg); }
                 }
                 
-                /* Scrollbar */
                 #nexi-chat-messages::-webkit-scrollbar {
                     width: 6px;
                 }
@@ -432,13 +437,18 @@
                     background: #999;
                 }
                 
-                /* Mobile Responsive */
                 @media (max-width: 480px) {
                     #nexi-chat-container {
                         width: calc(100vw - 20px);
                         height: calc(100vh - 100px);
                         bottom: 80px;
                         ${this.config.position}: 10px;
+                    }
+                    
+                    #nexi-chat-button {
+                        width: 56px;
+                        height: 56px;
+                        font-size: 24px;
                     }
                 }
             `;
@@ -448,7 +458,6 @@
             document.head.appendChild(styleSheet);
         },
 
-        // Criar estrutura HTML do widget
         createWidget: function() {
             const widgetHTML = `
                 <div id="nexi-chat-widget">
@@ -458,7 +467,7 @@
                     
                     <div id="nexi-chat-container">
                         <div id="nexi-chat-header">
-                            <img id="nexi-company-logo" src="https://placehold.co/40x40/ffffff/1a2b45?text=N" alt="Logo">
+                            <img id="nexi-company-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect fill='%231a2b45' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' font-size='20' fill='white' text-anchor='middle' dy='.3em'%3EN%3C/text%3E%3C/svg%3E" alt="Logo">
                             <div id="nexi-chat-header-info">
                                 <h3 id="nexi-company-name">Carregando...</h3>
                                 <p id="nexi-chat-status">Conectando...</p>
@@ -493,7 +502,6 @@
             this.attachEventListeners();
         },
 
-        // Event listeners
         attachEventListeners: function() {
             const button = document.getElementById('nexi-chat-button');
             const closeBtn = document.getElementById('nexi-chat-close');
@@ -503,18 +511,19 @@
             const fileInput = document.getElementById('nexi-chat-file-input');
             const resumeBtn = document.getElementById('nexi-resume-chat-btn');
             
-            button.addEventListener('click', () => this.toggleChat());
-            closeBtn.addEventListener('click', () => this.toggleChat());
-            sendBtn.addEventListener('click', () => this.sendMessage());
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !sendBtn.disabled) this.sendMessage();
-            });
-            attachBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
-            resumeBtn.addEventListener('click', () => this.resumeChat());
+            if (button) button.addEventListener('click', () => this.toggleChat());
+            if (closeBtn) closeBtn.addEventListener('click', () => this.toggleChat());
+            if (sendBtn) sendBtn.addEventListener('click', () => this.sendMessage());
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !sendBtn.disabled) this.sendMessage();
+                });
+            }
+            if (attachBtn) attachBtn.addEventListener('click', () => fileInput.click());
+            if (fileInput) fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
+            if (resumeBtn) resumeBtn.addEventListener('click', () => this.resumeChat());
         },
 
-        // Toggle chat aberto/fechado
         toggleChat: function() {
             const container = document.getElementById('nexi-chat-container');
             const button = document.getElementById('nexi-chat-button');
@@ -524,8 +533,8 @@
             if (this.state.isOpen) {
                 container.classList.add('nexi-chat-visible');
                 button.classList.add('nexi-chat-open');
-                if (!this.state.chatId && this.state.currentStep === 'ask_client_name') {
-                    this.startChatFlow();
+                if (!this.state.chatId && this.state.currentStep === 'ask_client_name' && this.state.companyData) {
+                    setTimeout(() => this.startChatFlow(), 300);
                 }
             } else {
                 container.classList.remove('nexi-chat-visible');
@@ -533,30 +542,48 @@
             }
         },
 
-        // Carregar dados da empresa
         loadCompanyData: async function() {
             try {
-                const response = await fetch(`${this.API.EMPRESA}?action=get_empresa&key=${this.API.KEY}&id_empresa=${this.config.empresaId}`);
+                const url = `${this.API.EMPRESA}?action=get_empresa&key=${this.API.KEY}&id_empresa=${this.config.empresaId}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const result = await response.json();
                 
                 if (result.success && result.data) {
                     this.state.companyData = result.data;
-                    document.getElementById('nexi-company-name').textContent = result.data.nome;
-                    document.getElementById('nexi-company-logo').src = result.data.foto_link || 'https://placehold.co/40x40/ffffff/1a2b45?text=N';
-                    document.getElementById('nexi-chat-status').textContent = 'Online';
+                    const nameEl = document.getElementById('nexi-company-name');
+                    const logoEl = document.getElementById('nexi-company-logo');
+                    const statusEl = document.getElementById('nexi-chat-status');
+                    
+                    if (nameEl) nameEl.textContent = result.data.nome;
+                    if (logoEl && result.data.foto_link) logoEl.src = result.data.foto_link;
+                    if (statusEl) statusEl.textContent = 'Online';
                 } else {
-                    throw new Error('Empresa não encontrada');
+                    throw new Error(result.message || 'Empresa não encontrada');
                 }
             } catch (error) {
                 console.error('Nexi Chat: Erro ao carregar empresa', error);
-                document.getElementById('nexi-company-name').textContent = 'Erro ao carregar';
-                document.getElementById('nexi-chat-status').textContent = 'Offline';
+                const nameEl = document.getElementById('nexi-company-name');
+                const statusEl = document.getElementById('nexi-chat-status');
+                if (nameEl) nameEl.textContent = 'Suporte';
+                if (statusEl) statusEl.textContent = 'Disponível';
+                
+                // Criar dados padrão
+                this.state.companyData = {
+                    nome: 'Suporte',
+                    empresa_id: this.config.empresaId
+                };
             }
         },
 
-        // Adicionar mensagem
         addMessage: function(text, sender = 'bot', name = null, isHtml = false) {
             const messagesContainer = document.getElementById('nexi-chat-messages');
+            if (!messagesContainer) return;
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `nexi-message nexi-message-${sender}`;
             
@@ -583,9 +610,10 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         },
 
-        // Indicador de digitação
         showTypingIndicator: function() {
             const messagesContainer = document.getElementById('nexi-chat-messages');
+            if (!messagesContainer) return;
+            
             const typingDiv = document.createElement('div');
             typingDiv.id = 'nexi-typing-indicator';
             typingDiv.className = 'nexi-message nexi-message-bot';
@@ -605,22 +633,28 @@
             if (indicator) indicator.remove();
         },
 
-        // Controle de input
         enableInput: function() {
             if (this.state.currentStep !== 'done') {
-                document.getElementById('nexi-chat-input').disabled = false;
-                document.getElementById('nexi-chat-send-btn').disabled = false;
-                document.getElementById('nexi-chat-attach-btn').disabled = !this.state.chatId;
+                const input = document.getElementById('nexi-chat-input');
+                const sendBtn = document.getElementById('nexi-chat-send-btn');
+                const attachBtn = document.getElementById('nexi-chat-attach-btn');
+                
+                if (input) input.disabled = false;
+                if (sendBtn) sendBtn.disabled = false;
+                if (attachBtn) attachBtn.disabled = !this.state.chatId;
             }
         },
 
         disableInput: function() {
-            document.getElementById('nexi-chat-input').disabled = true;
-            document.getElementById('nexi-chat-send-btn').disabled = true;
-            document.getElementById('nexi-chat-attach-btn').disabled = true;
+            const input = document.getElementById('nexi-chat-input');
+            const sendBtn = document.getElementById('nexi-chat-send-btn');
+            const attachBtn = document.getElementById('nexi-chat-attach-btn');
+            
+            if (input) input.disabled = true;
+            if (sendBtn) sendBtn.disabled = true;
+            if (attachBtn) attachBtn.disabled = true;
         },
 
-        // Iniciar fluxo de chat
         startChatFlow: function() {
             if (!this.state.companyData) {
                 this.addMessage('Aguarde enquanto carregamos as informações...', 'bot');
@@ -632,15 +666,19 @@
                 setTimeout(() => {
                     this.addMessage('Para começarmos, qual é o seu nome?', 'bot');
                     this.enableInput();
+                    
+                    // Focar no input
+                    const input = document.getElementById('nexi-chat-input');
+                    if (input) input.focus();
                 }, 1200);
             }, 500);
         },
 
-        // Enviar mensagem
         sendMessage: async function() {
             const input = document.getElementById('nexi-chat-input');
-            const text = input.value.trim();
+            if (!input) return;
             
+            const text = input.value.trim();
             if (!text) return;
             
             this.disableInput();
@@ -658,7 +696,6 @@
             }
         },
 
-        // Processar etapas do chat
         processStep: async function(input) {
             switch (this.state.currentStep) {
                 case 'ask_client_name':
@@ -729,472 +766,3 @@
                     await this.sendUserMessageToChat(input);
                     break;
             }
-        },
-
-        // Confirmar e registrar
-        confirmAndRegister: function() {
-            const summary = `<strong>Nome:</strong> ${this.state.customerData.nome}<br><strong>CPF:</strong> ${this.state.customerData.cpf}<br><strong>Celular:</strong> ${this.state.customerData.celular}<br><strong>Email:</strong> ${this.state.customerData.email}<br><strong>Nascimento:</strong> ${this.state.customerData.data_nascimento}<br><strong>Cidade:</strong> ${this.state.customerData.cidade}<br><strong>Estado:</strong> ${this.state.customerData.estado}`;
-            this.addMessage(`Para finalizar, por favor, confirme os dados:<br><br>${summary}`, 'bot', 'NexiBot', true);
-            setTimeout(() => {
-                this.addMessage("Os dados estão corretos e você aceita os termos da LGPD do Nexi CRM? (Digite 'sim' ou 'não')", 'bot');
-                this.state.currentStep = 'confirm_and_register';
-            }, 1000);
-        },
-
-        // Buscar CEP
-        handleCepInput: async function(cep) {
-            const cleanCep = cep.replace(/\D/g, '');
-            if (cleanCep.length !== 8) {
-                this.addMessage("CEP inválido. Tente novamente ou digite 'manual'.", 'bot');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-                const data = await response.json();
-                
-                if (data.erro) {
-                    this.addMessage('Não encontrei este CEP. Por favor, digite sua cidade.', 'bot');
-                    this.state.currentStep = 'ask_city';
-                } else {
-                    this.state.customerData.cidade = data.localidade;
-                    this.state.customerData.estado = data.uf;
-                    this.addMessage(`Endereço encontrado: ${data.localidade} - ${data.uf}.`, 'bot');
-                    this.confirmAndRegister();
-                }
-            } catch (error) {
-                this.addMessage('Tive um problema ao buscar o CEP. Por favor, digite sua cidade.', 'bot');
-                this.state.currentStep = 'ask_city';
-            }
-        },
-
-        // Verificar se cliente existe
-        checkCustomerExists: async function(cpf) {
-            try {
-                const url = `${this.API.CLIENTES}?action=getByCpf&cpf=${cpf}&id_empresa=${this.config.empresaId}`;
-                const response = await fetch(url);
-                const result = await response.json();
-                
-                if (result.success) {
-                    this.addMessage(`Encontrei seu cadastro, ${result.data.nome}! Um momento enquanto crio seu ticket de suporte.`, 'bot');
-                    this.state.customerData = result.data;
-                    await this.createSupportChat();
-                } else {
-                    this.addMessage('Não encontrei seu cadastro. Vamos criar um rapidamente.', 'bot');
-                    setTimeout(() => {
-                        this.addMessage('Qual seu celular com DDD?', 'bot');
-                        this.state.currentStep = 'ask_celular';
-                    }, 1000);
-                }
-            } catch (error) {
-                this.addMessage('Tive um problema para verificar seu cadastro. Tente novamente.', 'bot');
-            }
-        },
-
-        // Registrar cliente
-        registerCustomer: async function() {
-            try {
-                const params = new URLSearchParams({
-                    action: 'register',
-                    ...this.state.customerData,
-                    id_empresa: this.config.empresaId
-                });
-                const url = `${this.API.CLIENTES}?${params.toString()}`;
-                const response = await fetch(url);
-                const result = await response.json();
-                
-                if (result.success) {
-                    this.state.customerData.id_usuario = result.data.id_usuario;
-                    this.addMessage('Cadastro realizado com sucesso! Agora vou criar seu ticket de suporte.', 'bot');
-                    await this.createSupportChat();
-                } else {
-                    this.addMessage(`Houve um erro ao criar seu cadastro: ${result.message}`, 'bot');
-                    this.state.currentStep = 'done';
-                }
-            } catch (error) {
-                this.addMessage('Tive um problema para realizar seu cadastro. Tente novamente.', 'bot');
-                this.state.currentStep = 'done';
-            }
-        },
-
-        // Criar chat de suporte
-        createSupportChat: async function() {
-            const body = {
-                action: 'create_chat',
-                key: this.API.KEY,
-                creator_user_id: this.state.customerData.id_usuario,
-                creator_email: this.state.customerData.email || '',
-                title: `Suporte para ${this.state.customerData.nome}`,
-                send_email_summary: true
-            };
-            
-            try {
-                const response = await fetch(this.API.CHAT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    this.state.chatId = result.data.chat_id;
-                    const successMessage = `Seu atendimento foi iniciado!<br><br>O ID do seu chat é: <strong style="font-size: 16px; color: ${this.config.accentColor};">${this.state.chatId}</strong><br><br>Guarde este código para retomar a conversa no futuro.`;
-                    this.addMessage(successMessage, 'bot', 'NexiBot', true);
-                    setTimeout(() => {
-                        this.addMessage('Um de nossos atendentes irá se conectar em breve.', 'bot');
-                        this.addMessage('Enquanto aguarda, você pode descrever seu problema ou enviar um anexo.', 'bot');
-                        this.state.currentStep = 'awaiting_attendant';
-                        document.getElementById('nexi-chat-status').textContent = 'Aguardando atendente...';
-                        this.startPolling();
-                    }, 1500);
-                } else {
-                    this.addMessage(`Não consegui criar o chat: ${result.message || 'Tente novamente.'}`, 'bot');
-                    this.state.currentStep = 'done';
-                }
-            } catch (error) {
-                this.addMessage('Ocorreu um erro de rede ao criar o chat.', 'bot');
-                this.state.currentStep = 'done';
-            }
-        },
-
-        // Retomar chat existente
-        resumeChat: async function() {
-            const input = document.getElementById('nexi-resume-chat-input');
-            const button = document.getElementById('nexi-resume-chat-btn');
-            const chatIdToResume = input.value.trim();
-            
-            if (!chatIdToResume) return;
-            
-            button.disabled = true;
-            button.innerHTML = '<span class="nexi-loading"></span>';
-            
-            try {
-                const chatUrl = `${this.API.CHAT}?action=get_chat&key=${this.API.KEY}&chat_id=${chatIdToResume}`;
-                const chatResponse = await fetch(chatUrl);
-                const chatResult = await chatResponse.json();
-                
-                if (!chatResult.success) throw new Error(chatResult.message || 'Chat não encontrado.');
-                
-                const chatData = chatResult.data;
-                this.state.chatId = chatData.chat_id;
-                this.state.customerData.id_usuario = chatData.creator_user_id;
-                this.state.customerData.email = chatData.creator_email;
-                this.state.customerData.nome = chatData.title.replace('Suporte para ', '');
-                
-                // Carregar mensagens
-                const messagesUrl = `${this.API.CHAT}?action=get_messages&key=${this.API.KEY}&chat_id=${chatIdToResume}&page_size=200`;
-                const messagesResponse = await fetch(messagesUrl);
-                const messagesResult = await messagesResponse.json();
-                
-                // Limpar mensagens existentes
-                document.getElementById('nexi-chat-messages').innerHTML = '';
-                
-                // Adicionar mensagens carregadas
-                if (messagesResult.success && messagesResult.data.messages) {
-                    const messages = messagesResult.data.messages.sort((a, b) => 
-                        new Date(a.created_at || a[""]) - new Date(b.created_at || b[""])
-                    );
-                    
-                    for (const msg of messages) {
-                        await this.normalizeAndDisplayMessage(msg);
-                    }
-                    
-                    if (messages.length > 0) {
-                        const lastMsg = messages[messages.length - 1];
-                        this.state.lastMessageTimestamp = new Date(lastMsg.created_at || lastMsg[""]).getTime();
-                    }
-                }
-                
-                this.state.currentStep = 'awaiting_attendant';
-                document.getElementById('nexi-chat-status').textContent = 'Chat retomado';
-                this.enableInput();
-                this.startPolling();
-                
-                // Ocultar seção de retomar
-                document.getElementById('nexi-resume-section').style.display = 'none';
-                
-            } catch (error) {
-                this.addMessage(`Erro ao retomar chat: ${error.message}`, 'bot');
-                input.value = '';
-            } finally {
-                button.disabled = false;
-                button.innerHTML = 'Retomar';
-            }
-        },
-
-        // Normalizar e exibir mensagem
-        normalizeAndDisplayMessage: async function(msg, isNew = false) {
-            const normalized = { ...msg };
-            
-            if (!normalized.sender_name && normalized.sender_user_id) {
-                normalized.sender_name = normalized.sender_user_id === this.state.customerData.id_usuario 
-                    ? this.state.customerData.nome 
-                    : 'Atendente';
-            }
-            
-            if (normalized.attachment && typeof normalized.attachment === 'string' && !normalized.message) {
-                normalized.message = normalized.attachment;
-            }
-            
-            if (normalized.created_at === false && normalized[""]) {
-                normalized.created_at = normalized[""];
-            }
-            
-            const senderType = normalized.sender_user_id === this.state.customerData.id_usuario ? 'user' : 'attendant';
-            let content = normalized.message || "";
-            let isHtmlContent = false;
-            
-            // Verificar anexos
-            const attachmentMatch = content.match(/\*\*attachment_id:([a-zA-Z0-9_-]+)\*\*/);
-            const productMatch = content.match(/\*\*product_id:([a-zA-Z0-9_-]+)\*\*/);
-            
-            if (attachmentMatch) {
-                const attachmentId = attachmentMatch[1];
-                const attachmentDetails = await this.fetchAttachmentDetails(attachmentId);
-                if (attachmentDetails) {
-                    content = `<a href="${attachmentDetails.public_url}" target="_blank" style="color: #0066cc; text-decoration: underline;">📎 ${attachmentDetails.file_name}</a>`;
-                    isHtmlContent = true;
-                }
-            } else if (productMatch) {
-                const productId = productMatch[1];
-                const productDetails = await this.fetchProductDetails(productId);
-                if (productDetails) {
-                    const price = parseFloat(productDetails.valor).toLocaleString('pt-BR', { 
-                        style: 'currency', 
-                        currency: 'BRL' 
-                    });
-                    content = `
-                        <div style="border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px;">
-                            <img src="${productDetails.foto1 || 'https://placehold.co/64x64/eee/ccc?text=Produto'}" 
-                                 style="width: 64px; height: 64px; border-radius: 4px; float: left; margin-right: 8px;">
-                            <div>
-                                <strong>${productDetails.nome}</strong><br>
-                                <small style="color: #666;">${(productDetails.descricao || '').substring(0, 50)}...</small><br>
-                                <strong style="color: ${this.config.accentColor};">${price}</strong>
-                            </div>
-                        </div>
-                    `;
-                    isHtmlContent = true;
-                }
-            }
-            
-            this.addMessage(content, senderType, normalized.sender_name, isHtmlContent);
-            
-            if (isNew) {
-                const newTimestamp = new Date(normalized.created_at).getTime();
-                if (newTimestamp > this.state.lastMessageTimestamp) {
-                    this.state.lastMessageTimestamp = newTimestamp;
-                }
-            }
-        },
-
-        // Buscar detalhes de anexo
-        fetchAttachmentDetails: async function(attachmentId) {
-            try {
-                const url = `${this.API.CHAT}?action=get_attachment&key=${this.API.KEY}&attachment_id=${attachmentId}`;
-                const response = await fetch(url);
-                const result = await response.json();
-                return result.success ? result.data : null;
-            } catch (e) {
-                return null;
-            }
-        },
-
-        // Buscar detalhes de produto
-        fetchProductDetails: async function(productId) {
-            try {
-                const url = `${this.API.PRODUTOS}?action=getByCompany&id_empresa=${this.config.empresaId}`;
-                const response = await fetch(url);
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    return result.data.find(p => p.id_produto === productId);
-                }
-                return null;
-            } catch (e) {
-                return null;
-            }
-        },
-
-        // Buscar detalhes do atendente
-        fetchAttendantDetails: async function(attendantId) {
-            try {
-                const url = `${this.API.USER}?action=get&key=${this.API.KEY}&id=${attendantId}`;
-                const response = await fetch(url);
-                const result = await response.json();
-                return result.success ? result.data : null;
-            } catch (e) {
-                return null;
-            }
-        },
-
-        // Enviar mensagem do usuário para o chat
-        sendUserMessageToChat: async function(message) {
-            const body = {
-                action: 'add_message',
-                key: this.API.KEY,
-                chat_id: this.state.chatId,
-                sender_user_id: this.state.customerData.id_usuario,
-                sender_name: this.state.customerData.nome,
-                message: message
-            };
-            
-            try {
-                await fetch(this.API.CHAT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-            } catch (error) {
-                this.addMessage('Não foi possível enviar sua mensagem. Verifique sua conexão.', 'bot');
-            }
-        },
-
-        // Upload de arquivo
-        handleFileUpload: async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            this.disableInput();
-            this.addMessage(`Enviando anexo: ${file.name}...`, 'bot');
-            
-            const sendBtn = document.getElementById('nexi-chat-send-btn');
-            const originalContent = sendBtn.innerHTML;
-            sendBtn.innerHTML = '<span class="nexi-loading"></span>';
-            
-            try {
-                // Converter arquivo para base64
-                const base64String = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = error => reject(error);
-                });
-                
-                // Criar mensagem temporária
-                const tempMessageBody = {
-                    action: 'add_message',
-                    key: this.API.KEY,
-                    chat_id: this.state.chatId,
-                    sender_user_id: this.state.customerData.id_usuario,
-                    sender_name: this.state.customerData.nome,
-                    message: `[Uploading ${file.name}]`
-                };
-                
-                const tempMsgRes = await fetch(this.API.CHAT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(tempMessageBody)
-                });
-                const tempMsgResult = await tempMsgRes.json();
-                
-                if (!tempMsgResult.success) throw new Error(tempMsgResult.message);
-                
-                const messageId = tempMsgResult.data.message_id;
-                
-                // Upload do anexo
-                const attachmentBody = {
-                    action: 'upload_attachment',
-                    key: this.API.KEY,
-                    chat_id: this.state.chatId,
-                    message_id: messageId,
-                    file_name: file.name,
-                    file_type: file.type,
-                    file_data: base64String,
-                    uploaded_by: this.state.customerData.id_usuario
-                };
-                
-                const attachmentResponse = await fetch(this.API.CHAT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(attachmentBody)
-                });
-                const attachmentResult = await attachmentResponse.json();
-                
-                if (!attachmentResult.success) throw new Error(attachmentResult.message || 'Falha ao enviar o anexo.');
-                
-                // Enviar mensagem final com ID do anexo
-                const finalMessage = `**attachment_id:${attachmentResult.data.attachment_id}**`;
-                await this.sendUserMessageToChat(finalMessage);
-                
-                this.addMessage('Anexo enviado com sucesso!', 'bot');
-                
-            } catch (error) {
-                this.addMessage(`Erro ao enviar o anexo: ${error.message}`, 'bot');
-            } finally {
-                this.enableInput();
-                sendBtn.innerHTML = originalContent;
-                event.target.value = '';
-            }
-        },
-
-        // Polling para novas mensagens
-        startPolling: function() {
-            if (this.state.pollingInterval) clearInterval(this.state.pollingInterval);
-            
-            this.state.pollingInterval = setInterval(async () => {
-                try {
-                    // Verificar status do chat
-                    const chatUrl = `${this.API.CHAT}?action=get_chat&key=${this.API.KEY}&chat_id=${this.state.chatId}`;
-                    const chatResponse = await fetch(chatUrl);
-                    if (!chatResponse.ok) return;
-                    
-                    const chatResult = await chatResponse.json();
-                    
-                    if (chatResult.success) {
-                        const chatData = chatResult.data;
-                        
-                        // Verificar se atendente entrou
-                        if (chatData.attendant_user_id && !this.state.attendantJoined) {
-                            this.state.attendantJoined = true;
-                            const attendantDetails = await this.fetchAttendantDetails(chatData.attendant_user_id);
-                            const attendantName = attendantDetails ? attendantDetails.nome : (chatData.attendant_email || 'Atendente');
-                            
-                            document.getElementById('nexi-chat-status').textContent = `Atendido por ${attendantName}`;
-                            this.addMessage(`Olá! Meu nome é ${attendantName} e vou te ajudar.`, 'attendant', attendantName);
-                        }
-                        
-                        // Verificar se chat foi fechado
-                        const status = chatData.status || chatData.updated_at;
-                        if (status === 'fechado' || status === 'cancelado') {
-                            clearInterval(this.state.pollingInterval);
-                            this.addMessage('Este atendimento foi finalizado e não pode mais receber novas mensagens.', 'bot');
-                            this.disableInput();
-                            document.getElementById('nexi-chat-status').textContent = 'Chat finalizado';
-                            return;
-                        }
-                    }
-                    
-                    // Buscar novas mensagens
-                    const messagesUrl = `${this.API.CHAT}?action=get_messages&key=${this.API.KEY}&chat_id=${this.state.chatId}&page_size=50`;
-                    const messagesResponse = await fetch(messagesUrl);
-                    if (!messagesResponse.ok) return;
-                    
-                    const messagesResult = await messagesResponse.json();
-                    
-                    if (messagesResult.success && messagesResult.data && messagesResult.data.messages) {
-                        const newMessages = messagesResult.data.messages.filter(msg => 
-                            new Date(msg.created_at || msg[""]).getTime() > this.state.lastMessageTimestamp
-                        );
-                        
-                        if (newMessages.length > 0) {
-                            newMessages.sort((a, b) => 
-                                new Date(a.created_at || a[""]) - new Date(b.created_at || b[""])
-                            );
-                            
-                            for (const msg of newMessages) {
-                                await this.normalizeAndDisplayMessage(msg, true);
-                            }
-                        }
-                    }
-                } catch (error) {
-                    // Falha silenciosa no polling
-                }
-            }, 5000);
-        }
-    };
-
-    // Expor globalmente
-    window.NexiChat = NexiChat;
-})();
-
